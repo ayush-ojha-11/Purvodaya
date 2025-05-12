@@ -4,6 +4,10 @@ import dotenv from "dotenv";
 import cors from "cors";
 
 import authRoutes from "./routes/authRoutes.js";
+import attendanceRoutes from "./routes/attendanceRoutes.js";
+import inventoryRoutes from "./routes/inventoryRoutes.js";
+import projectRoutes from "./routes/projectRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -26,3 +30,7 @@ app.get("/", (req, res) => {
   res.send("Purvodaya API running.");
 });
 app.use("/api/auth", authRoutes);
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/inventory", inventoryRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/admin", adminRoutes);
