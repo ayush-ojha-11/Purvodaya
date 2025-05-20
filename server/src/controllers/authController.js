@@ -4,7 +4,7 @@ import { generateToken } from "../utils/generateToken.js";
 
 export const register = async (req, res) => {
   try {
-    const { name, location, email, password } = req.body;
+    const { name, location, email, password, joiningDate } = req.body;
 
     //Sanitize the data
     if (!name.trim() || !location.trim() || !email.trim() || !password.trim()) {
@@ -27,6 +27,7 @@ export const register = async (req, res) => {
       email,
       location,
       password: hashedPassword,
+      joiningDate,
     });
 
     if (newUser) {
@@ -34,10 +35,16 @@ export const register = async (req, res) => {
       await newUser.save();
 
       res.status(201).json({
-        _id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        location: newUser.location,
+        message: "Registration successfull",
+        user: {
+          _id: newUser._id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          location: newUser.location,
+          joiningDate: newUser.joiningDate,
+          salary: newUser.salary,
+        },
       });
     }
   } catch (error) {
@@ -71,18 +78,31 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid Credentials!" });
     }
     // password is correct. Login and generate token
+    generateToken(user._id, res);
     res.status(200).json({
       message: "Login Successful",
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
         location: user.location,
+        joiningDate: user.joiningDate,
         salary: user.salary,
       },
     });
   } catch (error) {
     console.log("Error in authController (login)", error.message);
     return res.status(500).json({ message: "Internal server error!" });
+  }
+};
+
+export const logout = async (req, res) => {
+  try {
+    res.cookie("jwt", "", { maxAge: 0 });
+    res.status(200).json({ message: "Logged out successfully." });
+  } catch (error) {
+    console.log("Error in authController (logout)", error.message);
+    res.status(500).json({ message: "Internal server error!" });
   }
 };

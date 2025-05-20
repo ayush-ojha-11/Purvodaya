@@ -1,10 +1,57 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createRoot } from "react-dom/client";
+import Landing from "./pages/Landing.jsx";
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+import "./index.css";
+import App from "./App.jsx";
+import Login from "./pages/Login.jsx";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
+import EmployeeDashboard from "./pages/EmployeeDashboard.jsx";
+import Register from "./pages/Register.jsx";
+
+const appRouter = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      {
+        path: "/",
+        element: <Landing />,
+      },
+      {
+        path: "/register",
+        element: <Register />,
+      },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      //Protected Admin Routes
+      {
+        path: "/admin",
+        element: <ProtectedAdminRoute />,
+        children: [
+          {
+            path: "dashboard",
+            element: <AdminDashboard />,
+          },
+        ],
+      },
+      // Employee routes
+      {
+        path: "/employee",
+        children: [
+          {
+            path: "dashboard",
+            element: <EmployeeDashboard />,
+          },
+        ],
+      },
+    ],
+  },
+]);
+
+createRoot(document.getElementById("root")).render(
+  <RouterProvider router={appRouter} />
+);
