@@ -4,6 +4,7 @@ import {
   markAttendanceForEmployee,
   getMyAttendance,
   getAllAttendance,
+  markAttendance,
 } from "../controllers/attendanceController.js";
 
 const router = express.Router();
@@ -17,4 +18,5 @@ router.get("/all", protect, adminOnly, getAllAttendance);
 //Employee views his own attendance
 router.get("/me", protect, getMyAttendance);
 
+router.post("/mark", protect, adminOnly, markAttendance);
 export default router;

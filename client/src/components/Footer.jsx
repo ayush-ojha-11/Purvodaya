@@ -52,17 +52,22 @@ const Footer = () => {
           <h2 className="text-xl font-semibold mb-4">Contact Us</h2>
           <ul className="space-y-2 text-sm">
             <li>
-              <a href="mailto:info@solarpro.com" className="link link-hover">
-                info@solarpro.com
+              <a
+                href="mailto:purvodaya.es@gmail.com"
+                className="link link-hover"
+              >
+                purvodaya.es@gmail.com
               </a>
             </li>
             <li>
-              <a href="tel:+919876543210" className="link link-hover">
+              <a href="tel:+91-9519999640" className="link link-hover">
                 +91-9876543210
               </a>
             </li>
             <li>
-              <span className="block text-sm">Delhi, India</span>
+              <span className="block text-sm">
+                209-X, Indraprasthpuram,Lane No.4, Gorakhpur, UP
+              </span>
             </li>
           </ul>
         </div>

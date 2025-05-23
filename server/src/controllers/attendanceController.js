@@ -70,3 +70,33 @@ export const getAllAttendance = async (req, res) => {
     return res.status(500).json({ message: "Internal server error!" });
   }
 };
+
+export const markAttendance = async (req, res) => {
+  try {
+    const { date, present, absent } = req.body;
+    if (!date || !Array.isArray(present) || !Array.isArray(absent)) {
+      return res.status(400).json({ message: "Invalid data provided" });
+    }
+
+    const existing = await Attendance.findOne({ date });
+    if (existing) {
+      //Update if already exists
+      existing.present = present;
+      existing.absent = absent;
+      await existing.save();
+      return res.status(200).json({ message: "Attendance updated." });
+    } else {
+      // Create new record
+      await Attendance.create({ date, present, absent });
+      return res
+        .status(201)
+        .json({ message: "Attendance marked successfully." });
+    }
+  } catch (error) {
+    console.log(
+      "Error in attendanceController (markAttendance)",
+      error.message
+    );
+    return res.status(500).json({ message: "Internal server error!" });
+  }
+};

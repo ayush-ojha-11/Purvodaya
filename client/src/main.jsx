@@ -9,7 +9,9 @@ import ProtectedAdminRoute from "./components/ProtectedAdminRoute.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import EmployeeDashboard from "./pages/EmployeeDashboard.jsx";
 import Register from "./pages/Register.jsx";
+import EmployeesPage from "./pages/admin/Employees.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
+import AdminAttendancePage from "./pages/admin/Attendance.jsx";
 
 const appRouter = createBrowserRouter([
   {
@@ -36,7 +38,11 @@ const appRouter = createBrowserRouter([
         children: [
           {
             element: <AdminLayout />,
-            children: [{ path: "dashboard", element: <AdminDashboard /> }],
+            children: [
+              { path: "dashboard", element: <AdminDashboard /> },
+              { path: "employees", element: <EmployeesPage /> },
+              { path: "attendance", element: <AdminAttendancePage /> },
+            ],
           },
         ],
       },

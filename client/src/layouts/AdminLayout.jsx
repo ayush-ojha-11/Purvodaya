@@ -63,7 +63,7 @@ const AdminLayout = () => {
                 to={path}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg transition hover:bg-base-200 ${
                   location.pathname === path
-                    ? "bg-primary text-primary-content font-semibold"
+                    ? "bg-primary text-primary-content font-semibold hover:bg-primary"
                     : "text-base-content"
                 }`}
               >
@@ -113,7 +113,7 @@ const AdminLayout = () => {
                     to={path}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition hover:bg-base-200 ${
                       location.pathname === path
-                        ? "bg-primary text-primary-content"
+                        ? "bg-primary text-primary-content font-semibold hover:bg-primary"
                         : "text-base-content"
                     }`}
                   >

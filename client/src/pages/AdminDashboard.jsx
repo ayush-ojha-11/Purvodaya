@@ -39,7 +39,7 @@ const AdminDashboard = () => {
       }
     };
     fetchStats();
-  }, []);
+  }, [getDashboardStats]);
 
   return (
     <div>
