@@ -19,12 +19,18 @@ const navItems = [
     icon: <LayoutDashboard size={18} />,
   },
   { name: "Employees", path: "/admin/employees", icon: <Users size={18} /> },
-  { name: "Inventory", path: "/admin/inventory", icon: <Box size={18} /> },
   {
-    name: "Attendance",
+    name: "Mark Attendance",
     path: "/admin/attendance",
     icon: <CalendarCheck size={18} />,
   },
+  {
+    name: "Attendance Summary",
+    path: "/admin/attendance-summary",
+    icon: <CalendarCheck size={18} />,
+  },
+  { name: "Inventory", path: "/admin/inventory", icon: <Box size={18} /> },
+
   {
     name: "Projects",
     path: "/admin/projects",

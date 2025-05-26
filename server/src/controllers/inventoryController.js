@@ -38,7 +38,10 @@ export const addinventoryItem = async (req, res) => {
     await item.save();
     return res.status(201).json(item);
   } catch (error) {
-    console.log("Error in inventoryController (addInventoryItem)");
+    console.log(
+      "Error in inventoryController (addInventoryItem)",
+      error.message
+    );
     return res.status(500).json({ message: "Internal server error!" });
   }
 };

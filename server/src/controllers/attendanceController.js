@@ -1,75 +1,6 @@
 import Attendance from "../models/Attendance.js";
 import User from "../models/User.js";
-
-//Admin can mark attendance of employees
-export const markAttendanceForEmployee = async (req, res) => {
-  try {
-    const { employeeId } = req.params;
-    const user = await User.findById(employeeId);
-
-    if (!user || user.role !== "employee") {
-      return res.status(404).json({ message: "Employee not found!" });
-    }
-    // checking if attendance is already marked for today or not
-    const existingRecord = await Attendance.findOne({
-      user: employeeId,
-      date: {
-        $gte: new Date().setHours(0, 0, 0, 0),
-        $lte: new Date().setHours(23, 59, 59, 999),
-      },
-    });
-
-    if (existingRecord) {
-      return res
-        .status(400)
-        .json({ message: "Attendance already marked for today" });
-    }
-    const attendance = new Attendance({
-      user: employeeId,
-      status: "present",
-    });
-    await attendance.save();
-    res.status(201).json({ message: "Attendance marked for employee" });
-  } catch (error) {
-    console.log(
-      "Error in attendance Controller (markAttendanceForEmployee)",
-      error.message
-    );
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
-
-//Employee can view their own attendance
-export const getMyAttendance = async (req, res) => {
-  try {
-    const data = await Attendance.find({ user: req.user._id }).sort({
-      date: -1,
-    });
-    return res.json(data);
-  } catch (error) {
-    console.log(
-      "Error in attendanceController (getMyAttendance)",
-      error.message
-    );
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
-
-//Admin views all attendance
-export const getAllAttendance = async (req, res) => {
-  try {
-    const data = (await Attendance.find().populate("user", "name email")).sort({
-      data: -1,
-    });
-    return res.status(200).json(data);
-  } catch (error) {
-    console.log(
-      "Error in attendanceController (getAllAttendance)",
-      error.message
-    );
-    return res.status(500).json({ message: "Internal server error!" });
-  }
-};
+import dayjs from "dayjs";
 
 export const markAttendance = async (req, res) => {
   try {
@@ -98,5 +29,60 @@ export const markAttendance = async (req, res) => {
       error.message
     );
     return res.status(500).json({ message: "Internal server error!" });
+  }
+};
+
+export const getAttendanceSummary = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+    if (!month || !year) {
+      return res.status(400).json({ message: "Month and year are required" });
+    }
+
+    // Fix date handling
+    const start = dayjs(`${year}-${month}-01`).startOf("month");
+    const end = start.endOf("month");
+    const startStr = start.format("YYYY-MM-DD");
+    const endStr = end.format("YYYY-MM-DD");
+
+    const employees = await User.find({ role: "employee" });
+
+    const attendanceRecords = await Attendance.find({
+      date: { $gte: startStr, $lte: endStr },
+    });
+
+    const summary = employees.map((emp) => {
+      let present = 0;
+      let absent = 0;
+      let absentDates = [];
+
+      const empIdStr = emp._id.toString();
+
+      attendanceRecords.forEach((record) => {
+        const presentIds = record.present.map((id) => id.toString());
+        const absentIds = record.absent.map((id) => id.toString());
+
+        if (presentIds.includes(empIdStr)) {
+          present++;
+        } else if (absentIds.includes(empIdStr)) {
+          absent++;
+          absentDates.push(record.date); // Already string in "YYYY-MM-DD"
+        }
+      });
+
+      return {
+        _id: emp._id,
+        name: emp.name,
+        email: emp.email,
+        presentDays: present,
+        absentDays: absent,
+        absentDates,
+      };
+    });
+
+    return res.json(summary);
+  } catch (error) {
+    console.error("Error in getAttendanceSummary:", error.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

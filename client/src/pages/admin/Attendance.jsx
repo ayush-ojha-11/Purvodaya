@@ -47,7 +47,7 @@ const AdminAttendancePage = () => {
   };
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-4 space-y-4">
       <h2 className="text-2xl font-semibold text-primary">Mark Attendance</h2>
 
       <div className="flex items-center gap-4">
@@ -66,7 +66,7 @@ const AdminAttendancePage = () => {
             <tr>
               <th>#</th>
               <th>Name</th>
-              <th>Email</th>
+              <th className="hidden md:block">Email</th>
               <th>Location</th>
               <th>Absent</th>
             </tr>
@@ -76,7 +76,7 @@ const AdminAttendancePage = () => {
               <tr key={emp._id}>
                 <td>{idx + 1}</td>
                 <td>{emp.name}</td>
-                <td>{emp.email}</td>
+                <td className="hidden md:block">{emp.email}</td>
                 <td>{emp.location}</td>
                 <td>
                   <input

@@ -56,6 +56,20 @@ const useAdminStore = create(
         set({ isMarkingAttendance: false });
       }
     },
+    getAttendanceSummary: async (month, year) => {
+      try {
+        set({ isFetchingData: true });
+
+        const res = await axiosInstance.get("/attendance/records", {
+          params: { month, year },
+        });
+        return res.data;
+      } catch (error) {
+        toast.error(error?.response?.data?.message);
+      } finally {
+        set({ isFetchingData: false });
+      }
+    },
   }))
 );
 export default useAdminStore;

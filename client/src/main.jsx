@@ -12,11 +12,15 @@ import Register from "./pages/Register.jsx";
 import EmployeesPage from "./pages/admin/Employees.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import AdminAttendancePage from "./pages/admin/Attendance.jsx";
+import AttendanceSummary from "./pages/admin/AttendanceSummary.jsx";
+import ErrorPage from "./pages/ErrorPage.jsx";
+import InventoryPage from "./pages/admin/Inventory.jsx";
 
 const appRouter = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "/",
@@ -42,6 +46,8 @@ const appRouter = createBrowserRouter([
               { path: "dashboard", element: <AdminDashboard /> },
               { path: "employees", element: <EmployeesPage /> },
               { path: "attendance", element: <AdminAttendancePage /> },
+              { path: "attendance-summary", element: <AttendanceSummary /> },
+              { path: "inventory", element: <InventoryPage /> },
             ],
           },
         ],
