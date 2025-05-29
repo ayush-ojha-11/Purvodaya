@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import dayjs from "dayjs";
@@ -109,8 +109,8 @@ const AttendanceSummary = () => {
           </thead>
           <tbody>
             {summary.map((emp, index) => (
-              <>
-                <tr key={emp._id}>
+              <React.Fragment key={emp._id}>
+                <tr>
                   <td>{index + 1}</td>
                   <td>{emp.name}</td>
                   <td>{emp.email}</td>
@@ -154,7 +154,7 @@ const AttendanceSummary = () => {
                     </td>
                   </tr>
                 )}
-              </>
+              </React.Fragment>
             ))}
           </tbody>
         </table>

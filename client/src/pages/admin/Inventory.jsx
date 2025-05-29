@@ -50,6 +50,8 @@ const InventoryPage = () => {
       <div className="overflow-x-auto">
         {isLoading ? (
           <p>Loading inventory...</p>
+        ) : inventory.length === 0 ? (
+          <p>No items found</p>
         ) : (
           <table className="table table-zebra w-full">
             <thead>

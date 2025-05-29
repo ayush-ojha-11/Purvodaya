@@ -15,6 +15,8 @@ import AdminAttendancePage from "./pages/admin/Attendance.jsx";
 import AttendanceSummary from "./pages/admin/AttendanceSummary.jsx";
 import ErrorPage from "./pages/ErrorPage.jsx";
 import InventoryPage from "./pages/admin/Inventory.jsx";
+import InventoryRequests from "./pages/admin/InventoryRequests.jsx";
+import EmployeeLayout from "./layouts/EmployeeLayout.jsx";
 
 const appRouter = createBrowserRouter([
   {
@@ -48,6 +50,7 @@ const appRouter = createBrowserRouter([
               { path: "attendance", element: <AdminAttendancePage /> },
               { path: "attendance-summary", element: <AttendanceSummary /> },
               { path: "inventory", element: <InventoryPage /> },
+              { path: "requests", element: <InventoryRequests /> },
             ],
           },
         ],
@@ -55,6 +58,7 @@ const appRouter = createBrowserRouter([
       // Employee routes
       {
         path: "/employee",
+        element: <EmployeeLayout />,
         children: [
           {
             path: "dashboard",
