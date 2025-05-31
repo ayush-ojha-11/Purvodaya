@@ -17,22 +17,13 @@ export const getAllInventory = async (req, res) => {
 
 // ADMIN: Add inventory item
 export const addinventoryItem = async (req, res) => {
-  const {
-    material,
-    maker,
-    model,
-    quantityOpen,
-    quantityClose,
-    remainingStock,
-  } = req.body;
+  const { material, maker, model, remainingStock } = req.body;
 
   try {
     const item = new Inventory({
       material,
       maker,
       model,
-      quantityOpen,
-      quantityClose,
       remainingStock,
     });
     await item.save();
@@ -91,7 +82,10 @@ export const submitInventoryRequest = async (req, res) => {
 
     return res.status(201).json({ message: "Request submitted", request });
   } catch (error) {
-    console.log("Error in inventoryController (submitInventoryRequest)");
+    console.log(
+      "Error in inventoryController (submitInventoryRequest)",
+      error.message
+    );
     return res.status(500).json({ message: "Internal server error!" });
   }
 };

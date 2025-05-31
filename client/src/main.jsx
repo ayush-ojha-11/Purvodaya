@@ -17,6 +17,7 @@ import ErrorPage from "./pages/ErrorPage.jsx";
 import InventoryPage from "./pages/admin/Inventory.jsx";
 import InventoryRequests from "./pages/admin/InventoryRequests.jsx";
 import EmployeeLayout from "./layouts/EmployeeLayout.jsx";
+import EmployeeInventory from "./pages/EmployeeInventory.jsx";
 
 const appRouter = createBrowserRouter([
   {
@@ -63,6 +64,10 @@ const appRouter = createBrowserRouter([
           {
             path: "dashboard",
             element: <EmployeeDashboard />,
+          },
+          {
+            path: "inventory",
+            element: <EmployeeInventory />,
           },
         ],
       },

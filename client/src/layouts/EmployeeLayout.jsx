@@ -49,15 +49,17 @@ const EmployeeLayout = () => {
       {!isMobile && (
         <aside className="hidden md:flex flex-col w-64 bg-base-100 border-r border-base-300">
           <div className="p-4">
-            <h1 className="font-bold text-lg">Welcome, {authUser?.name}</h1>
+            <h1 className="font-semibold text-xl pl-[4px] text-secondary">
+              Purvodaya Portal
+            </h1>
           </div>
 
-          <nav className="flex-1 p-4 space-y-3">
+          <nav className="flex-1 p-4 space-y-4">
             {navItems.map(({ name, path, icon }) => (
               <Link
                 key={path}
                 to={path}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg transition hover:bg-base-200 ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-base-200 ${
                   location.pathname === path
                     ? "bg-primary text-primary-content font-semibold hover:bg-primary"
                     : "text-base-content"
@@ -135,7 +137,7 @@ const EmployeeLayout = () => {
 
       {/* Main content */}
       {!isMobile && (
-        <main className="flex-1 hidden md:block p-6">
+        <main className="flex-1 hidden md:block ">
           <Outlet />
         </main>
       )}

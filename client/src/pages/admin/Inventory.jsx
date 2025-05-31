@@ -60,8 +60,6 @@ const InventoryPage = () => {
                 <th>Material</th>
                 <th>Maker</th>
                 <th>Model</th>
-                <th>Qty Open</th>
-                <th>Qty Close</th>
                 <th>Remaining</th>
                 <th className="text-center">Actions</th>
               </tr>
@@ -73,8 +71,6 @@ const InventoryPage = () => {
                   <td>{item.material}</td>
                   <td>{item.maker}</td>
                   <td>{item.model}</td>
-                  <td>{item.quantityOpen}</td>
-                  <td>{item.quantityClose}</td>
                   <td>{item.remainingStock}</td>
                   <td className="flex gap-2 justify-center">
                     <button

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import useInventoryStore from "../store/useInventoryStore";
+import toast from "react-hot-toast";
 
 const InventoryFormModal = ({ isOpen, onClose, selectedItem }) => {
   const addInventoryItem = useInventoryStore((state) => state.addInventoryItem);
@@ -12,8 +13,6 @@ const InventoryFormModal = ({ isOpen, onClose, selectedItem }) => {
     material: "",
     maker: "",
     model: "",
-    quantityOpen: 0,
-    quantityClose: 0,
     remainingStock: 0,
   });
 
@@ -23,8 +22,6 @@ const InventoryFormModal = ({ isOpen, onClose, selectedItem }) => {
         material: selectedItem.material,
         maker: selectedItem.maker,
         model: selectedItem.model,
-        quantityOpen: selectedItem.quantityOpen,
-        quantityClose: selectedItem.quantityClose,
         remainingStock: selectedItem.remainingStock,
       });
     } else {
@@ -32,29 +29,18 @@ const InventoryFormModal = ({ isOpen, onClose, selectedItem }) => {
         material: "",
         maker: "",
         model: "",
-        quantityOpen: "",
-        quantityClose: "",
         remainingStock: "",
       });
     }
   }, [selectedItem]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
 
-    setFormData((prev) => {
-      const updated = {
-        ...prev,
-        [name]: name.includes("quantity") ? +value : value,
-      };
-
-      // Ensure remainingStock always matches quantityClose
-      if (name === "quantityClose") {
-        updated.remainingStock = +value;
-      }
-
-      return updated;
-    });
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === "number" ? Number(value) : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -63,7 +49,10 @@ const InventoryFormModal = ({ isOpen, onClose, selectedItem }) => {
       ? await updateInventoryItem(selectedItem._id, formData)
       : await addInventoryItem(formData);
 
-    if (success) onClose();
+    if (success) {
+      toast.success("Success");
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -135,36 +124,18 @@ const InventoryFormModal = ({ isOpen, onClose, selectedItem }) => {
 
           <div>
             <label
-              htmlFor="quantityOpen"
+              htmlFor="remainingStock"
               className="block text-sm font-medium text-gray-700"
             >
-              Quantity Open
+              Total stock
             </label>
             <input
-              id="quantityOpen"
+              id="remainingStock"
               type="number"
-              name="quantityOpen"
-              placeholder="Quantity Open"
+              name="remainingStock"
+              placeholder="Total stock"
               className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              value={formData.quantityOpen}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="quantityClose"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Quantity Close
-            </label>
-            <input
-              id="quantityClose"
-              type="number"
-              name="quantityClose"
-              placeholder="Quantity Close"
-              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              value={formData.quantityClose}
+              value={formData.remainingStock}
               onChange={handleChange}
             />
           </div>

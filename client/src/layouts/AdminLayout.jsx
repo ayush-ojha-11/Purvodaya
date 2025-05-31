@@ -142,7 +142,7 @@ const AdminLayout = () => {
 
       {/* Main content */}
       {!isMobile && (
-        <main className="flex-1 hidden md:block p-6">
+        <main className="flex-1 hidden md:block">
           <Outlet />
         </main>
       )}
