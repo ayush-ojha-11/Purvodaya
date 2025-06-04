@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FaUsers,
   FaCalendarCheck,
@@ -15,26 +16,40 @@ const getCurrentMonthYear = () => {
   });
 };
 
-const StatCard = ({ title, value, icon, color }) => (
-  <div className="flex items-center p-5 bg-white rounded-xl shadow hover:shadow-md transition-all border border-gray-200">
-    <div
-      className="text-white text-3xl mr-4 p-3 rounded-full"
-      style={{ backgroundColor: color }}
-    >
-      {icon}
-    </div>
-    <div>
-      <h4 className="text-md font-semibold text-gray-600">{title}</h4>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-    </div>
-  </div>
-);
-
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const getDashboardStats = useAdminStore((state) => state.getDashboardStats);
+
+  const handleClick = (id) => {
+    if (id === "employees") {
+      navigate("/admin/employees");
+    } else if (id === "attendance") {
+      navigate("/admin/attendance-summary");
+    } else if (id === "inventory") {
+      navigate("/admin/inventory");
+    }
+  };
+
+  const StatCard = ({ title, value, icon, color, id }) => (
+    <div
+      onClick={() => handleClick(id)}
+      className="flex items-center p-5 bg-white rounded-xl shadow hover:shadow-md transition-all border border-gray-200"
+    >
+      <div
+        className="text-white text-3xl mr-4 p-3 rounded-full"
+        style={{ backgroundColor: color }}
+      >
+        {icon}
+      </div>
+      <div>
+        <h4 className="text-md font-semibold text-gray-600">{title}</h4>
+        <p className="text-2xl font-bold text-gray-900">{value}</p>
+      </div>
+    </div>
+  );
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -118,6 +133,7 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           {statItems.map((item) => (
             <StatCard
+              id={item.id}
               key={item.id}
               title={item.title}
               value={item.value}
