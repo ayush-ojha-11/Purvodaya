@@ -1,12 +1,5 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import {
-  Menu,
-  UserCircle,
-  CalendarCheck,
-  Box,
-  ClipboardList,
-  LogOut,
-} from "lucide-react";
+import { Menu, UserCircle, Box, ClipboardList, LogOut } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
 import { useEffect, useState } from "react";
 
@@ -15,11 +8,6 @@ const navItems = [
     name: "Dashboard",
     path: "/employee/dashboard",
     icon: <UserCircle size={18} />,
-  },
-  {
-    name: "Attendance",
-    path: "/employee/attendance",
-    icon: <CalendarCheck size={18} />,
   },
   { name: "Inventory", path: "/employee/inventory", icon: <Box size={18} /> },
   {

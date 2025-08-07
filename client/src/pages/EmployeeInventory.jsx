@@ -3,8 +3,11 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import useInventoryStore from "../store/useInventoryStore";
+import useAuthStore from "../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 const EmployeeInventory = () => {
+  const navigate = useNavigate();
   const {
     inventory,
     getInventory,
@@ -13,8 +16,16 @@ const EmployeeInventory = () => {
     isLoading,
   } = useInventoryStore();
 
+  const authUser = useAuthStore((state) => state.authUser);
+
   const [selectedItemId, setSelectedItemId] = useState("");
   const [remainingStock, setRemainingStock] = useState("");
+
+  useEffect(() => {
+    if (!authUser) {
+      navigate("/");
+    }
+  });
 
   useEffect(() => {
     getInventory();

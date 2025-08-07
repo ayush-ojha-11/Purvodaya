@@ -31,12 +31,13 @@ const navItems = [
   },
   { name: "Inventory", path: "/admin/inventory", icon: <Box size={18} /> },
 
+  { name: "Requests", path: "/admin/requests", icon: <FileCheck size={18} /> },
+
   {
     name: "Projects",
     path: "/admin/projects",
     icon: <ClipboardList size={18} />,
   },
-  { name: "Requests", path: "/admin/requests", icon: <FileCheck size={18} /> },
 ];
 
 const AdminLayout = () => {
