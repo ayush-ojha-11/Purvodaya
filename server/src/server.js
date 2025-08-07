@@ -15,7 +15,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://purvodaya.vercel.app/",
+    origin: "https://purvodaya.vercel.app",
     credentials: true,
   })
 );
