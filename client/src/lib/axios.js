@@ -1,6 +1,6 @@
 import axios from "axios";
 export const axiosInstance = axios.create({
   // baseURL: "/api/api",
-  baseURL: "http://localhost:7001/api",
+  baseURL: "https://purvodaya-server.onrender.com/api",
   withCredentials: true,
 });
