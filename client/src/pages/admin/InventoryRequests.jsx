@@ -81,7 +81,8 @@ const InventoryRequests = () => {
                     {req.inventoryItem?.remainingStock ?? "-"}
                   </td>
                   <td className="px-4 py-2">
-                    {req.data?.remainingStock ?? "-"}
+                    {req.data?.changeInStock < 0 ? "-" : "+"}{" "}
+                    {Math.abs(req.data?.changeInStock)}
                   </td>
                   <td className="px-4 py-2 capitalize">{req.status}</td>
                   <td className="px-4 py-2">

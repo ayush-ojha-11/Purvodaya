@@ -19,7 +19,7 @@ const EmployeeInventory = () => {
   const authUser = useAuthStore((state) => state.authUser);
 
   const [selectedItemId, setSelectedItemId] = useState("");
-  const [remainingStock, setRemainingStock] = useState("");
+  const [changeInStock, setChangeInStock] = useState("");
 
   useEffect(() => {
     if (!authUser) {
@@ -35,14 +35,13 @@ const EmployeeInventory = () => {
     e.preventDefault();
 
     if (!selectedItemId) return toast.error("Please select an inventory item");
-    if (remainingStock === "")
-      return toast.error("Field required to be filled");
+    if (changeInStock === "") return toast.error("Field required to be filled");
 
     const payload = {
       type: "update",
       inventoryItem: selectedItemId,
       data: {
-        remainingStock: Number(remainingStock),
+        changeInStock: Number(changeInStock),
       },
     };
 
@@ -51,7 +50,7 @@ const EmployeeInventory = () => {
     if (result) {
       toast.success("Request submitted");
       setSelectedItemId("");
-      remainingStock("");
+      setChangeInStock("");
     }
   };
 
@@ -87,11 +86,14 @@ const EmployeeInventory = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Remaining stock</label>
+          <label className="block text-sm font-medium">Add or Remove</label>
+          <p className="text-xs text-base-content mb-1">
+            (+1 to add one item / -1 to remove one item)
+          </p>
           <input
             type="number"
-            value={remainingStock}
-            onChange={(e) => setRemainingStock(e.target.value)}
+            value={changeInStock}
+            onChange={(e) => setChangeInStock(e.target.value)}
             className="w-full border px-3 py-2 rounded"
           />
         </div>

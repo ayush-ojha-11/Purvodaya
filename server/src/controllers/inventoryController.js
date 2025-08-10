@@ -119,9 +119,14 @@ export const approveInventoryRequest = async (req, res) => {
       const newItem = new Inventory(request.data);
       await newItem.save();
     } else if (request.type === "update") {
-      await Inventory.findByIdAndUpdate(request.inventoryItem, request.data, {
-        new: true,
-      });
+      // it increments or decrements as given by employee eg: +3 or -3
+      const res = await Inventory.findByIdAndUpdate(
+        request.inventoryItem,
+        { $inc: { remainingStock: request.data.changeInStock } },
+        { new: true }
+      );
+
+      console.log(res);
     } else if (request.type === "delete") {
       await Inventory.findByIdAndDelete(request.inventoryItem);
     }
