@@ -131,8 +131,8 @@ export const approveInventoryRequest = async (req, res) => {
       await Inventory.findByIdAndDelete(request.inventoryItem);
     }
 
-    request.status = "approved";
-    await request.save();
+    // Delete the request after action is done
+    await InventoryRequest.findByIdAndDelete(req.params.id);
     res.json({ message: "Request approved and action completed" });
   } catch (error) {
     console.log("Error in inventoryController (approveInventoryRequest)");
@@ -151,8 +151,8 @@ export const rejectInventoryRequest = async (req, res) => {
     }
 
     //proceeding if request is found and is pending
-    request.status = "rejected";
-    await request.save();
+    // Delete the request after action is done
+    await InventoryRequest.findByIdAndDelete(req.params.id);
     res.json({ message: "Request rejected" });
   } catch (error) {
     console.log("Error in inventoryController (rejectInventoryRequest)");

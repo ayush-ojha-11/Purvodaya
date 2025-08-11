@@ -4,13 +4,13 @@ import {
   Users,
   Box,
   CalendarCheck,
-  ClipboardList,
   FileCheck,
   LayoutDashboard,
   LogOut,
 } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
 import { useEffect, useState } from "react";
+import useInventoryStore from "../store/useInventoryStore";
 
 const navItems = [
   {
@@ -31,14 +31,35 @@ const navItems = [
   },
   { name: "Inventory", path: "/admin/inventory", icon: <Box size={18} /> },
 
-  { name: "Requests", path: "/admin/requests", icon: <FileCheck size={18} /> },
+  {
+    name: "Requests",
+    path: "/admin/requests",
+    icon: <FileCheck size={18} />,
+    badge: 0,
+  },
 ];
 
 const AdminLayout = () => {
   const location = useLocation();
   const authUser = useAuthStore((state) => state.authUser);
   const logout = useAuthStore((state) => state.logout);
+  const inventoryRequests = useInventoryStore(
+    (state) => state.inventoryRequests
+  );
+  const getInventoryRequests = useInventoryStore(
+    (state) => state.getInventoryRequests
+  );
+
+  const numberofRequests = inventoryRequests.length;
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  const navItemsWithBadges = navItems.map((item) =>
+    item.name === "Requests" ? { ...item, badge: numberofRequests } : item
+  );
+
+  useEffect(() => {
+    getInventoryRequests();
+  }, [getInventoryRequests]);
 
   useEffect(() => {
     function handleResize() {
@@ -58,7 +79,7 @@ const AdminLayout = () => {
           </div>
 
           <nav className="flex-1 p-4 space-y-3">
-            {navItems.map(({ name, path, icon }) => (
+            {navItemsWithBadges.map(({ name, path, icon, badge }) => (
               <Link
                 key={path}
                 to={path}
@@ -69,7 +90,12 @@ const AdminLayout = () => {
                 }`}
               >
                 {icon}
-                {name}
+                <span className="flex-1">{name}</span>
+                {badge > 0 && (
+                  <span className="badge badge-sm bg-red-500 text-white">
+                    {badge}
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
@@ -108,7 +134,7 @@ const AdminLayout = () => {
                 Hello, {authUser?.name}
               </h1>
               <div className="flex flex-col gap-5">
-                {navItems.map(({ name, path, icon }) => (
+                {navItemsWithBadges.map(({ name, path, icon, badge }) => (
                   <Link
                     key={path}
                     to={path}
@@ -120,6 +146,11 @@ const AdminLayout = () => {
                   >
                     {icon}
                     {name}
+                    {badge > 0 && (
+                      <span className="badge badge-sm bg-red-500 text-white">
+                        {badge}
+                      </span>
+                    )}
                   </Link>
                 ))}
                 <button
