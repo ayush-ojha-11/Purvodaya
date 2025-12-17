@@ -62,7 +62,7 @@ const EmployeeDashboard = () => {
   }
 
   return (
-    <div className="sm:p-6 lg:p-8 bg-gray-50  min-h-screen space-y-6">
+    <div className="p-6 sm:p-6 lg:p-8 bg-gray-50  min-h-screen space-y-6">
       <div>
         <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
           Welcome back, {authUser?.name ?? "Employee"} 👋

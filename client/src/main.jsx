@@ -18,6 +18,8 @@ import InventoryPage from "./pages/admin/Inventory.jsx";
 import InventoryRequests from "./pages/admin/InventoryRequests.jsx";
 import EmployeeLayout from "./layouts/EmployeeLayout.jsx";
 import EmployeeInventory from "./pages/EmployeeInventory.jsx";
+import EmployeeLeads from "./pages/EmployeeLeads.jsx";
+import Leads from "./pages/admin/Leads.jsx";
 
 const appRouter = createBrowserRouter([
   {
@@ -47,6 +49,7 @@ const appRouter = createBrowserRouter([
             element: <AdminLayout />,
             children: [
               { path: "dashboard", element: <AdminDashboard /> },
+              { path: "leads", element: <Leads /> },
               { path: "employees", element: <EmployeesPage /> },
               { path: "attendance", element: <AdminAttendancePage /> },
               { path: "attendance-summary", element: <AttendanceSummary /> },
@@ -68,6 +71,10 @@ const appRouter = createBrowserRouter([
           {
             path: "inventory",
             element: <EmployeeInventory />,
+          },
+          {
+            path: "leads",
+            element: <EmployeeLeads />,
           },
         ],
       },

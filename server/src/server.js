@@ -8,6 +8,7 @@ import attendanceRoutes from "./routes/attendanceRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import leadRoutes from "./routes/leadRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 
 dotenv.config();
@@ -42,3 +43,4 @@ app.use("/api/inventory", inventoryRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/employee", employeeRoutes);
+app.use("/api/lead", leadRoutes);

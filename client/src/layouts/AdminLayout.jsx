@@ -4,6 +4,7 @@ import {
   Users,
   Box,
   CalendarCheck,
+  UserPlus,
   FileCheck,
   LayoutDashboard,
   LogOut,
@@ -17,6 +18,11 @@ const navItems = [
     name: "Dashboard",
     path: "/admin/dashboard",
     icon: <LayoutDashboard size={18} />,
+  },
+  {
+    name: "Leads",
+    path: "/admin/leads",
+    icon: <UserPlus size={18} />,
   },
   { name: "Employees", path: "/admin/employees", icon: <Users size={18} /> },
   {
@@ -123,7 +129,7 @@ const AdminLayout = () => {
                 <Menu className="size-6" />
               </label>
             </div>
-            <div className="flex-1 p-4">
+            <div className="flex-1">
               <Outlet />
             </div>
           </div>

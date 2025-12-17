@@ -23,7 +23,10 @@ const ConfirmModal = ({
           <button className="btn btn-sm" onClick={onClose}>
             Cancel
           </button>
-          <button className="btn btn-error btn-sm" onClick={onConfirm}>
+          <button
+            className="btn btn-error btn-sm text-white"
+            onClick={onConfirm}
+          >
             Delete
           </button>
         </div>

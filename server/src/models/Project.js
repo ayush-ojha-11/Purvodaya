@@ -2,15 +2,17 @@ import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true },
-    description: { type: String },
-    status: {
+    leadId: { type: mongoose.Schema.Types.ObjectId, ref: "Lead" },
+    clientName: { type: String, required: true },
+    clienContact: { type: String, required: true },
+    description: String,
+    type: {
       type: String,
-      enum: ["ongoing", "completed", "on-hold"],
-      default: "ongoing",
+      enum: ["off-grid", "on-grid", "hybrid"],
+      required: true,
     },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date },
+    kw: { type: Number, required: true },
+    status: { type: String, required: true },
   },
   { timestamps: true }
 );

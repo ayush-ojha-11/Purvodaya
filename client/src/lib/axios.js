@@ -1,7 +1,7 @@
 import axios from "axios";
 export const axiosInstance = axios.create({
-  // baseURL: "/api/api",
-  baseURL: "https://purvodaya-server.onrender.com/api",
-  //baseURL: "http://localhost:7001/api",
+  //baseURL: "/api/api",
+  //baseURL: "https://purvodaya-server.onrender.com/api",
+  baseURL: "http://localhost:7001/api",
   withCredentials: true,
 });

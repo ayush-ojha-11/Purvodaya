@@ -1,5 +1,12 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Menu, UserCircle, Box, ClipboardList, LogOut } from "lucide-react";
+import {
+  Menu,
+  UserCircle,
+  Box,
+  ClipboardList,
+  LogOut,
+  UserPlus,
+} from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
 import { useEffect, useState } from "react";
 
@@ -10,6 +17,7 @@ const navItems = [
     icon: <UserCircle size={18} />,
   },
   { name: "Inventory", path: "/employee/inventory", icon: <Box size={18} /> },
+  { name: "Leads", path: "/employee/leads", icon: <UserPlus size={18} /> },
   {
     name: "Projects",
     path: "/employee/projects",
@@ -37,7 +45,7 @@ const EmployeeLayout = () => {
       {!isMobile && (
         <aside className="hidden md:flex flex-col w-64 bg-base-100 border-r border-base-300">
           <div className="p-4">
-            <h1 className="font-semibold text-xl pl-[4px] text-secondary">
+            <h1 className="font-semibold text-xl pl-1 text-secondary">
               Purvodaya Portal
             </h1>
           </div>
@@ -85,7 +93,7 @@ const EmployeeLayout = () => {
                 <Menu className="size-6" />
               </label>
             </div>
-            <div className="flex-1 p-4">
+            <div className="flex-1">
               <Outlet />
             </div>
           </div>

@@ -66,7 +66,7 @@ const EmployeesPage = () => {
   };
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="max-w-5xl mx-auto p-4 space-y-4">
       <h2 className="text-2xl font-semibold text-primary">Employees</h2>
 
       {/* Filters */}
