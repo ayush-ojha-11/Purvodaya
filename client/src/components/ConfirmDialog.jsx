@@ -4,6 +4,7 @@ const ConfirmDialog = ({
   message,
   confirmText = "Confirm",
   cancelText = "Cancel",
+  green = false,
   onConfirm,
   onCancel,
   loading = false,
@@ -31,7 +32,9 @@ const ConfirmDialog = ({
 
           <button
             onClick={onConfirm}
-            className="btn px-4 py-2 btn-error text-white rounded-lg text-sm"
+            className={`btn px-4 py-2 text-white rounded-lg text-sm ${
+              green ? "btn-success" : "btn-error"
+            }`}
             disabled={loading}
           >
             {loading ? "Processing..." : confirmText}

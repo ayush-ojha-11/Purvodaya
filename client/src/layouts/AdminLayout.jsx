@@ -23,6 +23,7 @@ const navItems = [
     name: "Leads",
     path: "/admin/leads",
     icon: <UserPlus size={18} />,
+    badge: 0,
   },
   { name: "Employees", path: "/admin/employees", icon: <Users size={18} /> },
   {
@@ -57,11 +58,20 @@ const AdminLayout = () => {
   );
 
   const numberofRequests = inventoryRequests.length;
+  const pendingLeadsCount = 2;
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  const navItemsWithBadges = navItems.map((item) =>
-    item.name === "Requests" ? { ...item, badge: numberofRequests } : item
-  );
+  const navItemsWithBadges = navItems.map((item) => {
+    if (item.name === "Requests") {
+      return { ...item, badge: numberofRequests };
+    }
+
+    if (item.name === "Leads") {
+      return { ...item, badge: pendingLeadsCount };
+    }
+
+    return item;
+  });
 
   useEffect(() => {
     getInventoryRequests();

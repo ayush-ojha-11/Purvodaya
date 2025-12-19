@@ -73,6 +73,7 @@ const Leads = () => {
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [confirmState, setConfirmState] = useState({
     open: false,
+    green: false,
     title: "",
     message: "",
     onConfirm: null,
@@ -130,6 +131,7 @@ const Leads = () => {
       setConfirmState({
         open: true,
         title: "Confirm Lead",
+        green: true,
         message: `Confirm ${lead.clientName} lead?`,
         onConfirm: async () => {
           await updateLeadStatus(lead._id, "confirmed");
@@ -304,6 +306,7 @@ const Leads = () => {
       <ConfirmDialog
         open={confirmState.open}
         title={confirmState.title}
+        green={confirmState.green}
         message={confirmState.message}
         onCancel={() => setConfirmState({ open: false })}
         onConfirm={confirmState.onConfirm}
