@@ -10,6 +10,7 @@ const useLeadStore = create((set) => ({
   page: 1,
   isSubmitting: false,
   isLoading: false,
+  pendingLeadsCount: 0,
 
   // POST lead (Employees)
   submitLead: async (requestData) => {
@@ -66,10 +67,12 @@ const useLeadStore = create((set) => ({
   // Update lead status (Admin)
   updateLeadStatus: async (id, status, reason = "") => {
     try {
+      const { pendingLeadsCount } = useLeadStore.getState();
       if (status === "confirmed") {
         const res = await axiosInstance.put(`/lead/${id}/confirm`);
         if (res.status === 201) {
           toast.success(res.data.message);
+          set({ pendingLeadsCount: pendingLeadsCount - 1 });
         }
       }
 
@@ -77,6 +80,7 @@ const useLeadStore = create((set) => ({
         const res = await axiosInstance.put(`/lead/${id}/reject`, { reason });
         if (res.status === 200) {
           toast.success(res.data.message);
+          set({ pendingLeadsCount: pendingLeadsCount - 1 });
         }
       }
       // refresh list
@@ -118,6 +122,15 @@ const useLeadStore = create((set) => ({
     } catch (error) {
       console.log("Error in deleting lead (useLeadStore)");
       toast.error(error?.response?.data?.message);
+    }
+  },
+  // get pending leads count
+  fetchPendingLeadsCount: async () => {
+    try {
+      const res = await axiosInstance.get("/lead/pending/count");
+      set({ pendingLeadsCount: res.data.count });
+    } catch (error) {
+      console.log("Error in useLeadStore (fetchPendingLeadsCount)", error);
     }
   },
 }));

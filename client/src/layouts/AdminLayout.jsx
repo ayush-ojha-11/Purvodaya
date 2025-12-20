@@ -12,6 +12,7 @@ import {
 import useAuthStore from "../store/useAuthStore";
 import { useEffect, useState } from "react";
 import useInventoryStore from "../store/useInventoryStore";
+import useLeadStore from "../store/useLeadStore";
 
 const navItems = [
   {
@@ -57,8 +58,9 @@ const AdminLayout = () => {
     (state) => state.getInventoryRequests
   );
 
+  const { fetchPendingLeadsCount, pendingLeadsCount } = useLeadStore();
+
   const numberofRequests = inventoryRequests.length;
-  const pendingLeadsCount = 2;
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const navItemsWithBadges = navItems.map((item) => {
@@ -75,7 +77,8 @@ const AdminLayout = () => {
 
   useEffect(() => {
     getInventoryRequests();
-  }, [getInventoryRequests]);
+    fetchPendingLeadsCount();
+  }, [fetchPendingLeadsCount, getInventoryRequests]);
 
   useEffect(() => {
     function handleResize() {

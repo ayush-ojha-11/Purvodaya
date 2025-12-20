@@ -84,7 +84,9 @@ export const confirmLead = async (req, res) => {
       leadId: lead._id,
       clientName: lead.clientName,
       clienContact: lead.clientContact,
-      description: lead.description,
+      full_address: lead.full_address,
+      city: lead.city,
+      pincode: lead.pincode,
       type: lead.type,
       kw: lead.kw,
       status: initialStatus,
@@ -142,5 +144,15 @@ export const deleteAllLeads = async (req, res) => {
   } catch (error) {
     console.log("Error in lead controller (deleteAllLeads)", error.message);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+// Get Pending leads count
+export const getPendingLeadsCount = async (req, res) => {
+  try {
+    const count = await Lead.countDocuments({ status: "pending" });
+    res.status(200).json({ count });
+  } catch (error) {
+    console.log("Error in leadController (getPendingLeadsCount)", error);
+    return res.status(500).json({ message: "Internal server error!" });
   }
 };

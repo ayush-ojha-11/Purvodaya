@@ -8,6 +8,7 @@ import {
   ChevronRight,
   AlertTriangle,
   EyeIcon,
+  X,
 } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore";
 import ConfirmDialog from "../../components/ConfirmDialog";
@@ -374,9 +375,9 @@ const Leads = () => {
 
               <button
                 onClick={() => setFullLeadView(false)}
-                className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
               >
-                Close
+                Close <X className="text-red-500" size={18} />
               </button>
             </div>
 

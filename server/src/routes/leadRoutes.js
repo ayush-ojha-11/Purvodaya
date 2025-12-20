@@ -7,6 +7,7 @@ import {
   rejectLead,
   deleteLead,
   deleteAllLeads,
+  getPendingLeadsCount,
 } from "../controllers/leadController.js";
 
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
@@ -14,6 +15,7 @@ import { protect, adminOnly } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.get("/", protect, adminOnly, getAllLeads);
+router.get("/pending/count", protect, adminOnly, getPendingLeadsCount);
 router.get("/my", protect, getMyLeads);
 router.post("/", protect, createLead);
 router.put("/:id/confirm", protect, adminOnly, confirmLead);
