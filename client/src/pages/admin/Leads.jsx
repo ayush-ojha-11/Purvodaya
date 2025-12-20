@@ -7,14 +7,26 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  EyeIcon,
 } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
+import { formatDate } from "../../lib/helper";
 
 /* -------------------- Mobile Card -------------------- */
-const LeadCard = ({ lead, getStatusBadge, onApprove, onReject, onDelete }) => (
-  <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+const LeadCard = ({
+  lead,
+  getStatusBadge,
+  onApprove,
+  onReject,
+  onDelete,
+  onViewFull,
+}) => (
+  <div
+    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+    onClick={onViewFull}
+  >
     <div className="flex justify-between items-start mb-2">
       <h3 className="font-semibold text-gray-900">{lead.clientName}</h3>
       <span
@@ -27,29 +39,46 @@ const LeadCard = ({ lead, getStatusBadge, onApprove, onReject, onDelete }) => (
     </div>
 
     <p className="text-sm text-gray-600 mb-1">📞 {lead.clientContact}</p>
-    <p className="text-sm text-gray-600 mb-3">
-      👤 {lead?.employeeId?.name || "NA"}
+    <p className="text-xs text-gray-600 mb-3">
+      Submitted by: {lead?.employeeId?.name || "NA"}
     </p>
 
-    <div className="flex justify-end gap-3">
-      <button
-        onClick={() => onApprove(lead._id)}
-        className="p-2 text-green-600 hover:bg-green-50 rounded-full"
-      >
-        <CheckCircle size={18} />
-      </button>
-      <button
-        onClick={() => onReject(lead._id)}
-        className="p-2 text-orange-500 hover:bg-orange-50 rounded-full"
-      >
-        <XCircle size={18} />
-      </button>
-      <button
-        onClick={() => onDelete(lead._id)}
-        className="p-2 text-red-600 hover:bg-red-50 rounded-full"
-      >
-        <Trash2 size={18} />
-      </button>
+    <div className="flex justify-between items-center">
+      <p className="text-xs">
+        Last updated:{" "}
+        {lead.updatedAt
+          ? formatDate(lead.updatedAt)
+          : formatDate(lead.createdAt)}
+      </p>
+      <div className="flex gap-3">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onApprove();
+          }}
+          className="p-2 text-green-600 hover:bg-green-50 rounded-full"
+        >
+          <CheckCircle size={18} />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onReject();
+          }}
+          className="p-2 text-orange-500 hover:bg-orange-50 rounded-full"
+        >
+          <XCircle size={18} />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(lead._id);
+          }}
+          className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
     </div>
   </div>
 );
@@ -78,6 +107,9 @@ const Leads = () => {
     message: "",
     onConfirm: null,
   });
+
+  const [fullLeadView, setFullLeadView] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
 
   useEffect(() => {
     if (!authUser) navigate("/");
@@ -139,6 +171,11 @@ const Leads = () => {
         },
       });
     }
+  };
+
+  const openFullLeadView = (lead) => {
+    setSelectedLead(lead);
+    setFullLeadView(true);
   };
 
   const getStatusBadge = (status) => {
@@ -203,6 +240,7 @@ const Leads = () => {
                 onApprove={() => handleLeadStatus(lead, "confirmed")}
                 onReject={() => handleLeadStatus(lead, "rejected")}
                 onDelete={handleDeleteSingle}
+                onViewFull={() => openFullLeadView(lead)}
               />
             ))}
 
@@ -238,6 +276,7 @@ const Leads = () => {
                   <th className="p-4">Contact</th>
                   <th className="p-4">Status</th>
                   <th className="p-4">Sent By</th>
+                  <th className="p-4">Last updated</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -256,7 +295,17 @@ const Leads = () => {
                       </span>
                     </td>
                     <td className="p-4">{lead?.employeeId?.name || "NA"}</td>
+                    <td className="p-4 text-xs">
+                      {lead.updatedAt
+                        ? formatDate(lead.updatedAt)
+                        : formatDate(lead.createdAt)}
+                    </td>
                     <td className="p-4 text-right space-x-5">
+                      <EyeIcon
+                        size={18}
+                        className="inline text-indigo-500 cursor-pointer"
+                        onClick={() => openFullLeadView(lead)}
+                      />
                       <CheckCircle
                         size={18}
                         className="inline text-green-600 cursor-pointer"
@@ -311,6 +360,138 @@ const Leads = () => {
         onCancel={() => setConfirmState({ open: false })}
         onConfirm={confirmState.onConfirm}
       />
+      {fullLeadView && selectedLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-xs"
+            onClick={() => setFullLeadView(false)}
+          ></div>
+          <div className="relative mx-4 md:mx-0 w-full max-w-3xl mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Lead Details
+              </h3>
+
+              <button
+                onClick={() => setFullLeadView(false)}
+                className="text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Client Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Client Name</p>
+                <p className="font-medium">{selectedLead.clientName}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Contact</p>
+                <p className="font-medium">{selectedLead.clientContact}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Address</p>
+                <p className="font-medium">{selectedLead.full_address}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">City</p>
+                <p className="font-medium">{selectedLead.city}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Pincode</p>
+                <p className="font-medium">{selectedLead.pincode}</p>
+              </div>
+            </div>
+
+            <hr className="my-5" />
+
+            {/* Project Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Type</p>
+                <span className="inline-block rounded bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700">
+                  {selectedLead.type}
+                </span>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Capacity (kW)</p>
+                <p className="font-medium">{selectedLead.kw}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Status</p>
+                <span
+                  className={`inline-block rounded px-2 py-1 text-sm font-medium
+            ${
+              selectedLead.status === "pending"
+                ? "bg-yellow-100 text-yellow-700"
+                : selectedLead.status === "confirmed"
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+                >
+                  {selectedLead.status}
+                </span>
+              </div>
+            </div>
+
+            {/* Rejection reason */}
+            {selectedLead.status === "rejected" && (
+              <div className="mt-4 rounded border border-red-200 bg-red-50 p-3">
+                <p className="text-sm font-medium text-red-700">
+                  Rejection Reason
+                </p>
+                <p className="text-sm text-red-600">
+                  {selectedLead.rejectionReason || "Not specified"}
+                </p>
+              </div>
+            )}
+
+            <hr className="my-5" />
+
+            {/* Employee Info */}
+            <div className="flex flex-col md:flex-row md:justify-between text-sm text-gray-600">
+              <div>
+                <p className="font-medium text-gray-800">
+                  Submitted By: {selectedLead.employeeId?.name}
+                </p>
+                <p>{selectedLead.employeeId?.email}</p>
+              </div>
+
+              <div className="mt-3 md:mt-0 text-right">
+                <p>
+                  Created:{" "}
+                  {new Date(selectedLead.createdAt).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
+                </p>
+                <p>
+                  Updated:{" "}
+                  {new Date(selectedLead.updatedAt).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
