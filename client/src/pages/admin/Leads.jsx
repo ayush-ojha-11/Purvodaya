@@ -14,6 +14,7 @@ import useAuthStore from "../../store/useAuthStore";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../lib/helper";
+import toast from "react-hot-toast";
 
 /* -------------------- Mobile Card -------------------- */
 const LeadCard = ({
@@ -309,13 +310,33 @@ const Leads = () => {
                       />
                       <CheckCircle
                         size={18}
-                        className="inline text-green-600 cursor-pointer"
-                        onClick={() => handleLeadStatus(lead, "confirmed")}
+                        className={` inline ${
+                          lead.status === "confirmed"
+                            ? "text-gray-400 cursor-not-allowed opacity-60"
+                            : "text-green-600 cursor-pointer hover:scale-105"
+                        }
+                        `}
+                        onClick={() => {
+                          if (lead.status === "confirmed") return;
+                          handleLeadStatus(lead, "confirmed");
+                        }}
                       />
                       <XCircle
                         size={18}
-                        className="inline text-orange-500 cursor-pointer"
-                        onClick={() => handleLeadStatus(lead, "rejected")}
+                        className={`inline ${
+                          lead.status === "confirmed" ||
+                          lead.status === "rejected"
+                            ? "text-gray-400 cursor-not-allowed opacity-60"
+                            : "text-orange-500 cursor-pointer hover:scale-105"
+                        }`}
+                        onClick={() => {
+                          if (
+                            lead.status === "confirmed" ||
+                            lead.status === "rejected"
+                          )
+                            return;
+                          handleLeadStatus(lead, "rejected");
+                        }}
                       />
                       <Trash2
                         size={18}
