@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import { toast } from "react-hot-toast";
 
-const useLeadStore = create((set) => ({
+const initialState = {
   leads: [],
   allLeads: [],
   totalPages: 1,
@@ -11,7 +11,12 @@ const useLeadStore = create((set) => ({
   isSubmitting: false,
   isLoading: false,
   pendingLeadsCount: 0,
+};
 
+const useLeadStore = create((set) => ({
+  ...initialState,
+
+  resetLeadStore: () => set(initialState),
   // POST lead (Employees)
   submitLead: async (requestData) => {
     try {

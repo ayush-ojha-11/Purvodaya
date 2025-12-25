@@ -20,6 +20,7 @@ import EmployeeLayout from "./layouts/EmployeeLayout.jsx";
 import EmployeeInventory from "./pages/EmployeeInventory.jsx";
 import EmployeeLeads from "./pages/EmployeeLeads.jsx";
 import Leads from "./pages/admin/Leads.jsx";
+import Projects from "./pages/admin/Projects.jsx";
 
 const appRouter = createBrowserRouter([
   {
@@ -50,6 +51,7 @@ const appRouter = createBrowserRouter([
             children: [
               { path: "dashboard", element: <AdminDashboard /> },
               { path: "leads", element: <Leads /> },
+              { path: "projects", element: <Projects /> },
               { path: "employees", element: <EmployeesPage /> },
               { path: "attendance", element: <AdminAttendancePage /> },
               { path: "attendance-summary", element: <AttendanceSummary /> },
@@ -75,6 +77,10 @@ const appRouter = createBrowserRouter([
           {
             path: "leads",
             element: <EmployeeLeads />,
+          },
+          {
+            path: "projects",
+            element: <Projects />,
           },
         ],
       },

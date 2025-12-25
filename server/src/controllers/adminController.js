@@ -2,12 +2,14 @@ import User from "../models/User.js";
 import Inventory from "../models/Inventory.js";
 import Attendance from "../models/Attendance.js";
 import Project from "../models/Project.js";
+import Lead from "../models/Lead.js";
 
 export const getAdminDashboardStats = async (req, res) => {
   try {
     const employeesCount = await User.countDocuments({ role: "employee" });
     const totalAttendance = await Attendance.countDocuments();
     const totalProjects = await Project.countDocuments();
+    const totalLeads = await Lead.countDocuments();
     const totalInventory = await Inventory.countDocuments();
 
     res.status(200).json({
@@ -15,6 +17,7 @@ export const getAdminDashboardStats = async (req, res) => {
       totalAttendance,
       totalProjects,
       totalInventory,
+      totalLeads,
     });
   } catch (error) {
     console.log("Error in adminController (getAdminDashboardStats)");

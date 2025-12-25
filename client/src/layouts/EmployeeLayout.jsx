@@ -16,13 +16,13 @@ const navItems = [
     path: "/employee/dashboard",
     icon: <UserCircle size={18} />,
   },
-  { name: "Inventory", path: "/employee/inventory", icon: <Box size={18} /> },
-  { name: "Leads", path: "/employee/leads", icon: <UserPlus size={18} /> },
   {
     name: "Projects",
     path: "/employee/projects",
     icon: <ClipboardList size={18} />,
   },
+  { name: "Your Leads", path: "/employee/leads", icon: <UserPlus size={18} /> },
+  { name: "Inventory", path: "/employee/inventory", icon: <Box size={18} /> },
 ];
 
 const EmployeeLayout = () => {

@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 import { toast } from "react-hot-toast";
 import { devtools, persist } from "zustand/middleware";
+import useProjectStore from "./useProjectStore.js";
+import useLeadStore from "./useLeadStore.js";
 
 const useAuthStore = create(
   devtools(
@@ -43,6 +45,8 @@ const useAuthStore = create(
         try {
           const res = await axiosInstance.post("/auth/logout");
           set({ authUser: null });
+          useProjectStore.getState().resetProjectStore();
+          useLeadStore.getState().resetLeadStore();
           toast.success(res.data.message);
         } catch (error) {
           toast.error(error.response.data.message);

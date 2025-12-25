@@ -1,4 +1,3 @@
-import { PROJECT_STATUS } from "../config/projectStatus.js";
 import Lead from "../models/Lead.js";
 import Project from "../models/Project.js";
 
@@ -78,12 +77,12 @@ export const confirmLead = async (req, res) => {
     lead.status = "confirmed";
     await lead.save();
 
-    const initialStatus = "confirmed";
+    const initialStatus = "lead-confirmed";
     // create project
     const project = new Project({
       leadId: lead._id,
       clientName: lead.clientName,
-      clienContact: lead.clientContact,
+      clientContact: lead.clientContact,
       full_address: lead.full_address,
       city: lead.city,
       pincode: lead.pincode,

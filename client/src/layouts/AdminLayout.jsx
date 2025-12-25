@@ -8,6 +8,7 @@ import {
   FileCheck,
   LayoutDashboard,
   LogOut,
+  ClipboardList,
 } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
 import { useEffect, useState } from "react";
@@ -25,6 +26,11 @@ const navItems = [
     path: "/admin/leads",
     icon: <UserPlus size={18} />,
     badge: 0,
+  },
+  {
+    name: "Projects",
+    path: "/admin/projects",
+    icon: <ClipboardList className="outlined" size={18} />,
   },
   { name: "Employees", path: "/admin/employees", icon: <Users size={18} /> },
   {

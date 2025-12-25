@@ -14,7 +14,6 @@ import useAuthStore from "../../store/useAuthStore";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../lib/helper";
-import toast from "react-hot-toast";
 
 /* -------------------- Mobile Card -------------------- */
 const LeadCard = ({
@@ -56,18 +55,29 @@ const LeadCard = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
+            if (lead.status === "confirmed") return;
             onApprove();
           }}
-          className="p-2 text-green-600 hover:bg-green-50 rounded-full"
+          className={`${
+            lead.status === "confirmed"
+              ? "p-2 text-gray-400 opacity-60"
+              : "p-2 text-green-600 hover:bg-green-50 rounded-full"
+          }`}
         >
           <CheckCircle size={18} />
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
+            if (lead.status === "confirmed" || lead.status === "rejected")
+              return;
             onReject();
           }}
-          className="p-2 text-orange-500 hover:bg-orange-50 rounded-full"
+          className={`${
+            lead.status === "confirmed" || lead.status === "rejected"
+              ? "p-2 text-gray-400 opacity-60"
+              : "p-2 text-orange-500 hover:bg-orange-50 rounded-full"
+          }`}
         >
           <XCircle size={18} />
         </button>
@@ -118,7 +128,7 @@ const Leads = () => {
   });
 
   useEffect(() => {
-    fetchAllLeads(true, 1); // reset on mount
+    fetchAllLeads(); // reset on mount
   }, [fetchAllLeads]);
 
   // handle delete
@@ -216,7 +226,7 @@ const Leads = () => {
           <button
             onClick={handleDeleteAll}
             disabled={isDeletingAll}
-            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border rounded-lg text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border rounded-lg text-sm hover:cursor-pointer"
           >
             <Trash2 size={16} />
             {isDeletingAll ? "Deleting..." : "Delete All"}
@@ -382,6 +392,7 @@ const Leads = () => {
         onCancel={() => setConfirmState({ open: false })}
         onConfirm={confirmState.onConfirm}
       />
+
       {fullLeadView && selectedLead && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div

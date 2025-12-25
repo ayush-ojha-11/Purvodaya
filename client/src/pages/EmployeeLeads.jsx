@@ -30,7 +30,7 @@ const EmployeeLeads = () => {
   });
 
   useEffect(() => {
-    fetchLeads(); // fetch all leads of the employee
+    fetchLeads(true); // fetch all leads of the employee
   }, [fetchLeads]);
 
   const handleChange = (e) => {
