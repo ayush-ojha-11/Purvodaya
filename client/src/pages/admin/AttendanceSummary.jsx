@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import dayjs from "dayjs";
 import useAdminStore from "../../store/useAdminStore";
 
@@ -8,6 +6,7 @@ const AttendanceSummary = () => {
   const getAttendanceSummary = useAdminStore(
     (state) => state.getAttendanceSummary
   );
+
   const [summary, setSummary] = useState([]);
   const [expandedUserId, setExpandedUserId] = useState(null);
 
@@ -15,38 +14,11 @@ const AttendanceSummary = () => {
   const [month, setMonth] = useState(now.format("MM"));
   const [year, setYear] = useState(now.format("YYYY"));
 
-  // For downloading PDF (Attendance data)
-  const handleDownloadPDF = () => {
-    if (!summary || summary.length === 0) return;
-
-    const doc = new jsPDF();
-
-    doc.setFontSize(18);
-    doc.text(
-      `Attendance Report - ${dayjs(`${year}-${month}-01`).format("MMMM YYYY")}`,
-      14,
-      22
-    );
-
-    autoTable(doc, {
-      startY: 30,
-      head: [["#", "Name", "Email", "Present Days", "Absent Days"]],
-      body: summary.map((emp, index) => [
-        index + 1,
-        emp.name,
-        emp.email,
-        emp.presentDays,
-        emp.absentDays,
-      ]),
-      styles: {
-        fontSize: 10,
-      },
-      headStyles: {
-        fillColor: [52, 152, 219], // blue
-      },
-    });
-
-    doc.save(`Attendance-${month}-${year}.pdf`);
+  // ✅ PDF is lazy-loaded
+  const handleDownloadPDF = async () => {
+    if (!summary.length) return;
+    const { downloadAttendancePDF } = await import("../../lib/pdf.js");
+    downloadAttendancePDF(summary, month, year);
   };
 
   useEffect(() => {
@@ -59,17 +31,19 @@ const AttendanceSummary = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-4 space-y-4">
-      <h2 className="text-primary text-2xl font-semibold">Summary</h2>
-      {/* Month and year selection */}
+      <h2 className="text-primary text-2xl font-semibold">
+        Attendance Summary
+      </h2>
+
+      {/* Month / Year */}
       <div className="flex gap-4">
-        {/* Month */}
         <select
           className="select select-bordered"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
         >
           {Array.from({ length: 12 }, (_, i) => {
-            const m = (i + 1).toString().padStart(2, "0");
+            const m = String(i + 1).padStart(2, "0");
             return (
               <option key={m} value={m}>
                 {dayjs(`${year}-${m}-01`).format("MMMM")}
@@ -77,14 +51,14 @@ const AttendanceSummary = () => {
             );
           })}
         </select>
-        {/* Year */}
+
         <select
-          className="select selcet-bordered"
+          className="select select-bordered"
           value={year}
           onChange={(e) => setYear(e.target.value)}
         >
           {Array.from({ length: 5 }, (_, i) => {
-            const y = (now.year() - i).toString();
+            const y = String(now.year() - i);
             return (
               <option key={y} value={y}>
                 {y}
@@ -94,7 +68,7 @@ const AttendanceSummary = () => {
         </select>
       </div>
 
-      {/* Summary Table */}
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="table table-zebra w-full">
           <thead>
@@ -118,7 +92,7 @@ const AttendanceSummary = () => {
                   <td>{emp.absentDays}</td>
                   <td>
                     <button
-                      className="btn p-5 btn-sm btn-outline lg:btn-md"
+                      className="btn btn-sm btn-outline"
                       onClick={() =>
                         setExpandedUserId((prev) =>
                           prev === emp._id ? null : emp._id
@@ -129,28 +103,22 @@ const AttendanceSummary = () => {
                     </button>
                   </td>
                 </tr>
+
                 {expandedUserId === emp._id && (
                   <tr className="bg-base-200">
-                    <td colSpan={6} className="bg-primary/75 text-white">
-                      <p className="text-sm">
-                        <span className="font-semibold mr-2">
-                          {emp.name} was absent on:
-                        </span>
-                        {emp.absentDates.length > 0 ? (
-                          <span className="flex flex-wrap gap-2 mt-1">
-                            {emp.absentDates.map((date, index) => (
+                    <td colSpan={6}>
+                      <div className="flex flex-wrap gap-2">
+                        {emp.absentDates.length
+                          ? emp.absentDates.map((d, i) => (
                               <span
-                                key={index}
+                                key={i}
                                 className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full"
                               >
-                                {dayjs(date).date()}
+                                {dayjs(d).date()}
                               </span>
-                            ))}
-                          </span>
-                        ) : (
-                          "None"
-                        )}
-                      </p>
+                            ))
+                          : "No absences"}
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -160,8 +128,8 @@ const AttendanceSummary = () => {
         </table>
       </div>
 
-      <button className="btn btn-primary " onClick={handleDownloadPDF}>
-        Download
+      <button className="btn btn-primary" onClick={handleDownloadPDF}>
+        Download PDF
       </button>
     </div>
   );

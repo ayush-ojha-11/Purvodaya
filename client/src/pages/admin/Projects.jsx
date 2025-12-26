@@ -8,7 +8,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { downloadProjectPDF, formatDate } from "../../lib/helper";
+import { formatDate } from "../../lib/helper";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { PROJECT_WORKFLOW } from "../../config/projectStatus";
 import useAuthStore from "../../store/useAuthStore";
@@ -64,8 +64,8 @@ const Projects = () => {
     totalPages,
   } = useProjectStore();
 
-  const { authUser } = useAuthStore();
-  const isAdmin = authUser.role === "admin";
+  const authUser = useAuthStore((state) => state.authUser);
+  const isAdmin = authUser?.role === "admin";
 
   // hooks
   const navigate = useNavigate();
@@ -81,7 +81,7 @@ const Projects = () => {
 
   // Use effect hooks
   useEffect(() => {
-    if (!authUser) navigate("/login");
+    if (!authUser) navigate("/");
   }, [authUser, navigate]);
 
   useEffect(() => {
@@ -124,6 +124,11 @@ const Projects = () => {
         setIsDeletingAll(false);
       },
     });
+  };
+
+  const handleDownloadPDF = async (project) => {
+    const { downloadProjectPDF } = await import("../../lib/pdf.js");
+    downloadProjectPDF(project);
   };
 
   const openFullProjectView = (project) => {
@@ -383,7 +388,7 @@ const Projects = () => {
                             Project completed 🎉
                           </p>
                           <button
-                            onClick={() => downloadProjectPDF(selectedProject)}
+                            onClick={() => handleDownloadPDF(selectedProject)}
                             className="mt-3 rounded bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 cursor-pointer"
                           >
                             Download Project PDF

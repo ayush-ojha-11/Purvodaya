@@ -103,9 +103,17 @@ export const updateProjectStatus = async (req, res) => {
       changedBy: req.user._id,
     });
     await project.save();
-    res
-      .status(200)
-      .json({ message: "Project status changed successfully", project });
+
+    // refetch populated project
+    const populatedProject = await Project.findById(project._id).populate(
+      "statusHistory.changedBy",
+      "name"
+    );
+
+    res.status(200).json({
+      message: "Project status changed successfully",
+      project: populatedProject,
+    });
   } catch (error) {
     console.log(
       "Error in projectController (updateProjectStatus)",
