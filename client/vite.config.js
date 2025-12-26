@@ -14,7 +14,6 @@ export default defineConfig({
             if (id.includes("jspdf-autotable")) return "pdf-core";
             if (id.includes("html2canvas")) return "pdf-core";
             if (id.includes("canvg")) return "pdf-core";
-            if (id.includes("react")) return "react";
             if (id.includes("zustand")) return "state";
             return "vendor";
           }
