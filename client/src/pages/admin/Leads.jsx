@@ -127,6 +127,18 @@ const Leads = () => {
     if (!authUser) navigate("/");
   });
 
+  // to disable scroll of background when lead is opened
+  useEffect(() => {
+    if (fullLeadView) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [fullLeadView]);
+
   useEffect(() => {
     fetchAllLeads(); // reset on mount
   }, [fetchAllLeads]);
@@ -215,7 +227,9 @@ const Leads = () => {
       {/* Header */}
       <div className="flex flex-row justify-between items-center mb-6 gap-4 p-2">
         <div>
-          <h2 className="text-2xl font-bold text-primary">Lead Management</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-primary">
+            Lead Management
+          </h2>
           <p className="text-sm text-gray-500">
             Manage and track incoming leads
           </p>
@@ -226,9 +240,9 @@ const Leads = () => {
           <button
             onClick={handleDeleteAll}
             disabled={isDeletingAll}
-            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border rounded-lg text-sm hover:cursor-pointer"
+            className="flex items-center gap-2 px-2 py-1 bg-red-50 text-red-600 border rounded-lg text-sm hover:cursor-pointer"
           >
-            <Trash2 size={16} />
+            <Trash2 size={14} />
             {isDeletingAll ? "Deleting..." : "Delete All"}
           </button>
         )}
@@ -256,7 +270,11 @@ const Leads = () => {
               />
             ))}
 
-            <div className="flex flex-col item-center justify-center">
+            <div
+              className={`flex-col item-center justify-center ${
+                page === totalPages ? "hidden" : "flex"
+              }`}
+            >
               <p className="text-center mb-1">
                 Page: {page} of {totalPages}
               </p>

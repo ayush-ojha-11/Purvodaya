@@ -9,7 +9,6 @@ const Register = () => {
     email: "",
     password: "",
     location: "",
-    joiningDate: "",
   });
   const navigate = useNavigate();
   const { isLoggingIn, register, authUser } = useAuthStore();
@@ -140,23 +139,6 @@ const Register = () => {
               />
             </div>
           </div>
-          {/* JoiningDate */}
-          <div className="form-conrol">
-            <label className="label">
-              <span className="font-medium">Joining Date</span>
-            </label>
-            <div className="relative">
-              <Calendar className="absolute z-10 left-3 top-3.5 w-3.5 h-3.5 text-base-content" />
-              <input
-                type="date"
-                name="joiningDate"
-                value={formData.joiningDate}
-                onChange={handleChange}
-                required
-                className="input w-full pl-10"
-              />
-            </div>
-          </div>
 
           <button
             className="btn btn-primary w-full"
@@ -183,5 +165,4 @@ const Register = () => {
     </div>
   );
 };
-
 export default Register;

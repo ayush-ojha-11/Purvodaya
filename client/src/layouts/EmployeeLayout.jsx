@@ -69,7 +69,7 @@ const EmployeeLayout = () => {
 
           <div className="p-4">
             <button
-              className="btn btn-ghost w-full flex justify-start"
+              className="btn btn-ghost w-full flex justify-start text-red-600"
               onClick={() => logout()}
             >
               <LogOut /> Logout

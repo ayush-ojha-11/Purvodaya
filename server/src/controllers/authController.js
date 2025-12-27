@@ -4,7 +4,7 @@ import { generateToken } from "../utils/generateToken.js";
 
 export const register = async (req, res) => {
   try {
-    const { name, location, email, password, joiningDate } = req.body;
+    const { name, location, email, password } = req.body;
 
     //Sanitize the data
     if (!name.trim() || !location.trim() || !email.trim() || !password.trim()) {
@@ -27,7 +27,6 @@ export const register = async (req, res) => {
       email,
       location,
       password: hashedPassword,
-      joiningDate,
     });
 
     if (newUser) {
@@ -42,8 +41,6 @@ export const register = async (req, res) => {
           email: newUser.email,
           role: newUser.role,
           location: newUser.location,
-          joiningDate: newUser.joiningDate,
-          salary: newUser.salary,
         },
       });
     }
@@ -87,8 +84,6 @@ export const login = async (req, res) => {
         email: user.email,
         role: user.role,
         location: user.location,
-        joiningDate: user.joiningDate,
-        salary: user.salary,
       },
     });
   } catch (error) {

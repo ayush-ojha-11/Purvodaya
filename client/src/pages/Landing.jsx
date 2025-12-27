@@ -17,133 +17,111 @@ export default function Landing() {
   }, [authUser, navigate]);
 
   return (
-    <div className="min-h-screen bg-base-100 flex flex-col">
-      {/* HERO SECTION */}
-      <section className="w-full flex flex-col-reverse lg:flex-row items-center justify-between gap-8 px-6 lg:px-20 py-16">
-        {/* TEXT SECTION */}
+    <div className="min-h-screen bg-linear-to-b from-base-100 to-base-200">
+      {/* HERO */}
+      <section className="max-w-7xl mx-auto flex flex-col-reverse lg:flex-row items-center gap-12 px-6 lg:px-20 py-24">
+        {/* TEXT */}
         <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7 }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
           className="flex-1 text-center lg:text-left"
         >
-          <h1 className="text-5xl lg:text-5xl font-bold text-primary leading-tight mb-4">
-            Purvodaya Energy Solutions
+          <h1 className="text-4xl lg:text-6xl font-extrabold leading-tight mb-6">
+            Powering Solar
+            <span className="block text-primary">Operations Smarter</span>
           </h1>
-          <p className="text-lg lg:text-xl text-base-content max-w-xl mx-auto lg:mx-0 mb-6">
-            Streamline your solar business with our all-in-one platform — manage{" "}
-            <span className="font-semibold text-primary">attendance</span>,
-            <span className="font-semibold text-primary"> inventory</span>, and
-            <span className="font-semibold text-primary">
-              {" "}
-              project tracking
-            </span>
-            .
+
+          <p className="text-lg lg:text-xl text-base-content/80 max-w-xl mb-8">
+            One platform to manage{" "}
+            <span className="text-primary font-semibold">attendance</span>,{" "}
+            <span className="text-primary font-semibold">inventory</span>, and{" "}
+            <span className="text-primary font-semibold">projects</span> — built
+            for solar teams.
           </p>
-          <div className="flex justify-center lg:justify-start gap-4">
-            <Link to="/login">
-              <button className="btn btn-primary px-6 text-lg">Login</button>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <Link to="/login" className="btn btn-primary btn-lg px-8">
+              Get Started
             </Link>
-            <Link to="/register">
-              <button className="btn btn-outline btn-secondary px-6 text-lg">
-                Create Account
-              </button>
+            <Link to="/register" className="btn btn-outline btn-lg px-8">
+              Create Account
             </Link>
           </div>
         </motion.div>
 
-        {/* IMAGE SECTION */}
+        {/* IMAGE */}
         <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
           className="flex-1"
         >
           <img
             src={heroImg}
-            alt="Solar Panel Illustration"
-            className="max-w-md mx-auto sm:size-96 size-80"
+            alt="Solar Illustration"
+            className="max-w-2xs mx-auto drop-shadow-xl"
           />
         </motion.div>
       </section>
 
-      {/* FEATURES SECTION */}
-      <section className="w-full bg-base-100 py-16 px-6 lg:px-20">
-        <motion.div
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h2 className="text-4xl font-bold text-primary mb-2">
-            Core Features
-          </h2>
-          <p className="text-base-content max-w-2xl mx-auto">
-            Everything you need to manage your solar workforce and business
-            operations.
+      {/* FEATURES */}
+      <section className="py-20 px-6 lg:px-20 bg-base-100">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl font-bold mb-3">Core Features</h2>
+          <p className="text-base-content/70 max-w-2xl mx-auto">
+            Everything you need to run solar operations efficiently.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            visible: {
-              transition: {
-                staggerChildren: 0.2,
-              },
-            },
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {[
             {
               title: "Attendance & HR",
-              desc: "Track and export attendance. Employees can view their own daily records.",
+              desc: "Daily attendance with export-ready reports.",
               icon: "📅",
             },
             {
-              title: "Inventory Management",
-              desc: "Admin-controlled inventory with employee request and approval workflow.",
+              title: "Inventory Control",
+              desc: "Requests, approvals, and stock tracking.",
               icon: "📦",
             },
             {
               title: "Project Tracking",
-              desc: "Monitor ongoing and completed solar installations with real-time updates.",
+              desc: "Live project status and progress updates.",
               icon: "📊",
             },
             {
-              title: "Secure Login System",
-              desc: "Role-based dashboards for Admins and Employees with secure JWT auth.",
+              title: "Secure Access",
+              desc: "Role-based dashboards with JWT auth.",
               icon: "🔐",
             },
             {
-              title: "Export Reports",
-              desc: "Download attendance and inventory logs in Excel or CSV format.",
+              title: "Report Exports",
+              desc: "Excel & CSV downloads in one click.",
               icon: "📁",
             },
             {
-              title: "Fully Responsive",
-              desc: "Optimized UI and performance for desktops, tablets, and mobile devices.",
+              title: "Responsive UI",
+              desc: "Works perfectly on mobile and desktop.",
               icon: "📱",
             },
-          ].map((feature, idx) => (
+          ].map((f, i) => (
             <motion.div
-              key={idx}
-              className="card bg-base-200 shadow-xl hover:shadow-2xl transition-shadow"
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 },
-              }}
+              key={i}
+              whileHover={{ y: -6 }}
+              className="card bg-base-200 border border-base-300 shadow-md hover:shadow-xl transition-all"
             >
-              <div className="card-body items-center text-center">
-                <div className="text-4xl mb-2">{feature.icon}</div>
-                <h2 className="card-title text-primary">{feature.title}</h2>
-                <p className="text-base-content text-sm">{feature.desc}</p>
+              <div className="card-body text-center">
+                <div className="text-4xl mb-3">{f.icon}</div>
+                <h3 className="text-xl font-semibold text-primary">
+                  {f.title}
+                </h3>
+                <p className="text-sm text-base-content/80">{f.desc}</p>
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </section>
     </div>
   );

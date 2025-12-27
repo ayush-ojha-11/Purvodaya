@@ -17,7 +17,7 @@ const ConfirmDialog = ({
         className="absolute inset-0 bg-black/30 backdrop-blur-xs"
         onClick={onCancel}
       ></div>
-      <div className="relative bg-white rounded-lg w-full max-w-sm p-5">
+      <div className="relative bg-white rounded-lg w-full max-w-sm p-5 mx-2">
         <h3 className="text-lg font-semibold mb-2">{title}</h3>
         <p className="text-sm text-gray-600 mb-5">{message}</p>
 

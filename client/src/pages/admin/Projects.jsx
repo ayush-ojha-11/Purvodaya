@@ -159,7 +159,7 @@ const Projects = () => {
     <div className="max-w-5xl mx-auto min-h-screen pb-16 p-4">
       <div className="flex flex-row justify-between items-center mb-6 gap-4 p-2">
         <div>
-          <h2 className="text-2xl font-bold text-primary">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary">
             {isAdmin ? "Project Management" : "Projects"}
           </h2>
           <p className="text-sm text-gray-500">
@@ -172,9 +172,9 @@ const Projects = () => {
           <button
             onClick={handleDeleteAll}
             disabled={isDeletingAll}
-            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border rounded-lg text-sm hover:cursor-pointer"
+            className="flex items-center gap-2 px-2 py-1 bg-red-50 text-red-600 border rounded-lg text-sm hover:cursor-pointer"
           >
-            <Trash2 size={16} />
+            <Trash2 size={14} />
             {isDeletingAll ? "Deleting..." : "Delete All"}
           </button>
         )}
@@ -198,7 +198,11 @@ const Projects = () => {
                 onViewFull={() => openFullProjectView(project)}
               />
             ))}
-            <div className="flex flex-col item-center justify-center">
+            <div
+              className={`flex-col item-center justify-center ${
+                page === totalPages ? "hidden" : "flex"
+              }`}
+            >
               <p className="text-center mb-1">
                 Page: {page} of {totalPages}
               </p>
@@ -317,7 +321,7 @@ const Projects = () => {
               />
 
               {/* Modal */}
-              <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg border border-gray-200 bg-white p-6">
+              <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 mx-2">
                 {/* Header */}
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-800">
