@@ -4,15 +4,30 @@ import { devtools } from "zustand/middleware";
 import { axiosInstance } from "../lib/axios";
 
 const useAdminStore = create(
-  devtools((set) => ({
+  devtools((set, get) => ({
+    employees: null,
+    dashboardStats: null,
+    statsFetched: false,
     isFetchingData: false,
     isDeleting: false,
     isMarkingAttendance: false,
 
-    getDashboardStats: async () => {
+    getDashboardStats: async (force = false) => {
+      const { statsFetched, dashboardStats, isFetchingData } = get();
+      // HARD STOP: already fetched
+      if (statsFetched && dashboardStats && !force) {
+        return dashboardStats;
+      }
+      // Prevent parallel calls
+      if (isFetchingData) return;
+
       try {
         set({ isFetchingData: true });
         const res = await axiosInstance.get("/admin/dashboard-stats");
+        set({
+          dashboardStats: res.data,
+          statsFetched: true,
+        });
         return res.data;
       } catch (error) {
         toast.error(error.response.data.message);
@@ -20,10 +35,15 @@ const useAdminStore = create(
         set({ isFetchingData: false });
       }
     },
-    getAllEmployees: async () => {
+    getAllEmployees: async (force = false) => {
+      const { employees } = get();
+      if (!force && employees) {
+        return employees;
+      }
       try {
         set({ isFetchingData: true });
         const res = await axiosInstance.get("/admin/employees");
+        set({ employees: res.data });
         return res.data;
       } catch (error) {
         toast.error(error.response.data.message);

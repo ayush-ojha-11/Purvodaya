@@ -6,11 +6,19 @@ import Lead from "../models/Lead.js";
 
 export const getAdminDashboardStats = async (req, res) => {
   try {
-    const employeesCount = await User.countDocuments({ role: "employee" });
-    const totalAttendance = await Attendance.countDocuments();
-    const totalProjects = await Project.countDocuments();
-    const totalLeads = await Lead.countDocuments();
-    const totalInventory = await Inventory.countDocuments();
+    const [
+      employeesCount,
+      totalAttendance,
+      totalProjects,
+      totalLeads,
+      totalInventory,
+    ] = await Promise.all([
+      User.countDocuments({ role: "employee" }),
+      Attendance.countDocuments(),
+      Project.countDocuments(),
+      Lead.countDocuments(),
+      Inventory.countDocuments(),
+    ]);
 
     res.status(200).json({
       employeesCount,

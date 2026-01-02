@@ -1,4 +1,4 @@
-import { Loader2, Lock, Mail } from "lucide-react";
+import { Loader2, Lock, Mail, Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -7,6 +7,8 @@ import toast from "react-hot-toast";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+
   const navigate = useNavigate();
   // Subscribing to parts of useAuthStore using selector functions
   const login = useAuthStore((state) => state.login);
@@ -86,7 +88,7 @@ const Login = () => {
             <div className="relative">
               <Lock className="absolute left-3 top-3.5 w-3.5 h-3.5 text-base-content z-10" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 autoComplete="current-password"
                 value={formData.password}
@@ -95,6 +97,17 @@ const Login = () => {
                 required
                 className="input w-full pl-10"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-3.5 text-base-content opacity-70 hover:opacity-100"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
           </div>
 

@@ -17,7 +17,9 @@ const EmployeesPage = () => {
 
   // Get unique locations from employees
   const locations = Array.from(
-    new Set(employees.map((e) => e.location).filter(Boolean))
+    new Set(
+      employees.map((e) => e.location.trim().toUpperCase()).filter(Boolean)
+    )
   );
 
   // Fetch employees only once on mount
@@ -60,6 +62,7 @@ const EmployeesPage = () => {
     if (success) {
       const updated = employees.filter((e) => e._id !== selectedEmployee._id);
       setEmployees(updated); // sync employees
+      await getAllEmployees(true);
     }
     setShowModal(false);
     setSelectedEmployee(null);

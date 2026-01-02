@@ -240,9 +240,9 @@ const Leads = () => {
           <button
             onClick={handleDeleteAll}
             disabled={isDeletingAll}
-            className="flex items-center gap-2 px-2 py-1 bg-red-50 text-red-600 border rounded-lg text-sm hover:cursor-pointer"
+            className="flex items-center gap-2 px-2 py-1 bg-red-50 text-red-600 border rounded-lg text-xs md:text-sm hover:cursor-pointer"
           >
-            <Trash2 size={14} />
+            <Trash2 size={12} />
             {isDeletingAll ? "Deleting..." : "Delete All"}
           </button>
         )}
@@ -412,57 +412,71 @@ const Leads = () => {
       />
 
       {fullLeadView && selectedLead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-2">
+          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-xs"
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
             onClick={() => setFullLeadView(false)}
-          ></div>
-          <div className="relative mx-4 md:mx-0 w-full max-w-3xl mt-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
+          />
+
+          {/* Modal */}
+          <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
+            {/* Header */}
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800">
                 Lead Details
               </h3>
 
               <button
                 onClick={() => setFullLeadView(false)}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 cursor-pointer"
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
               >
                 Close <X className="text-red-500" size={18} />
               </button>
             </div>
 
             {/* Client Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Client Name</p>
-                <p className="font-medium">{selectedLead.clientName}</p>
+                <p className="font-medium wrap-break-word">
+                  {selectedLead.clientName}
+                </p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-500">Contact</p>
-                <p className="font-medium">{selectedLead.clientContact}</p>
+                <p className="font-medium wrap-break-word">
+                  {selectedLead.clientContact}
+                </p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-500">Address</p>
-                <p className="font-medium">{selectedLead.full_address}</p>
+                <p className="font-medium wrap-break-word">
+                  {selectedLead.full_address}
+                </p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-500">City</p>
-                <p className="font-medium">{selectedLead.city}</p>
+                <p className="font-medium wrap-break-word">
+                  {selectedLead.city}
+                </p>
               </div>
 
               <div>
                 <p className="text-sm text-gray-500">Pincode</p>
-                <p className="font-medium">{selectedLead.pincode}</p>
+                <p className="font-medium wrap-break-word">
+                  {selectedLead.pincode}
+                </p>
               </div>
             </div>
 
-            <hr className="my-5" />
+            <hr className="my-4" />
 
             {/* Project Info */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-sm text-gray-500">Type</p>
                 <span className="inline-block rounded bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700">
@@ -478,44 +492,45 @@ const Leads = () => {
               <div>
                 <p className="text-sm text-gray-500">Status</p>
                 <span
-                  className={`inline-block rounded px-2 py-1 text-sm font-medium
-            ${
-              selectedLead.status === "pending"
-                ? "bg-yellow-100 text-yellow-700"
-                : selectedLead.status === "confirmed"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
+                  className={`inline-block rounded px-2 py-1 text-sm font-medium ${
+                    selectedLead.status === "pending"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : selectedLead.status === "confirmed"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
                 >
                   {selectedLead.status}
                 </span>
               </div>
             </div>
 
-            {/* Rejection reason */}
+            {/* Rejection Reason */}
             {selectedLead.status === "rejected" && (
               <div className="mt-4 rounded border border-red-200 bg-red-50 p-3">
                 <p className="text-sm font-medium text-red-700">
                   Rejection Reason
                 </p>
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-red-600 wrap-break-word">
                   {selectedLead.rejectionReason || "Not specified"}
                 </p>
               </div>
             )}
 
-            <hr className="my-5" />
+            <hr className="my-4" />
 
             {/* Employee Info */}
-            <div className="flex flex-col md:flex-row md:justify-between text-sm text-gray-600">
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between text-sm text-gray-600">
               <div>
-                <p className="font-medium text-gray-800">
+                <p className="font-medium text-gray-800 wrap-break-word">
                   Submitted By: {selectedLead.employeeId?.name}
                 </p>
-                <p>{selectedLead.employeeId?.email}</p>
+                <p className="wrap-break-word">
+                  {selectedLead.employeeId?.email}
+                </p>
               </div>
 
-              <div className="mt-3 md:mt-0 text-right">
+              <div className="sm:text-right">
                 <p>
                   Created:{" "}
                   {new Date(selectedLead.createdAt).toLocaleString("en-US", {

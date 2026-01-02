@@ -39,6 +39,12 @@ const EmployeeLayout = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  //helper functions
+  const closeDrawer = () => {
+    const drawer = document.getElementById("employee-drawer");
+    if (drawer) drawer.checked = false;
+  };
+
   return (
     <div className="min-h-screen flex bg-base-100">
       {/* Desktop Sidebar */}
@@ -108,6 +114,7 @@ const EmployeeLayout = () => {
                   <Link
                     key={path}
                     to={path}
+                    onClick={closeDrawer}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition hover:bg-base-200 ${
                       location.pathname === path
                         ? "bg-primary text-primary-content font-semibold hover:bg-primary"

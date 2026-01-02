@@ -147,7 +147,7 @@ const EmployeeLeads = () => {
                 />
               </div>
               <p className="text-gray-400 text-sm mt-5">Address information</p>
-              <div className="flex gap-2">
+              <div className={`block md:flex gap-2`}>
                 <input
                   name="full_address"
                   value={form.full_address}
@@ -156,7 +156,7 @@ const EmployeeLeads = () => {
                   className="w-full border p-2 rounded-xl"
                   required
                 />
-                <div className="flex flex-2/3 gap-2">
+                <div className={`flex gap-2 mt-4 md:mt-0`}>
                   <input
                     name="city"
                     value={form.city}

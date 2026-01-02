@@ -74,6 +74,7 @@ const Projects = () => {
     open: false,
     title: "",
     message: "",
+    green: null,
     onConfirm: null,
   });
   const [fullProjectView, setFullProjectView] = useState(false);
@@ -302,6 +303,7 @@ const Projects = () => {
         open={confirmState.open}
         title={confirmState.title}
         message={confirmState.message}
+        green={confirmState.green}
         onCancel={() => setConfirmState({ open: false })}
         onConfirm={confirmState.onConfirm}
       />
@@ -375,11 +377,20 @@ const Projects = () => {
                         <div className="mt-4">
                           <button
                             onClick={() => {
-                              updateProjectStatus(
-                                selectedProject._id,
-                                nextStatus
-                              );
-                              setFullProjectView(false);
+                              setConfirmState({
+                                open: true,
+                                title: "Change Project Status",
+                                green: true,
+                                message: `Are you sure you want to change status to "${nextStatus}"?`,
+                                onConfirm: async () => {
+                                  await updateProjectStatus(
+                                    selectedProject._id,
+                                    nextStatus
+                                  );
+                                  setConfirmState({ open: false });
+                                  setFullProjectView(false);
+                                },
+                              });
                             }}
                             className="cursor-pointer rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                           >

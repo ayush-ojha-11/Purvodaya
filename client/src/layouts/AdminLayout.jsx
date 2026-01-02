@@ -57,6 +57,7 @@ const AdminLayout = () => {
   const location = useLocation();
   const authUser = useAuthStore((state) => state.authUser);
   const logout = useAuthStore((state) => state.logout);
+
   const inventoryRequests = useInventoryStore(
     (state) => state.inventoryRequests
   );
@@ -80,6 +81,12 @@ const AdminLayout = () => {
 
     return item;
   });
+
+  //helper functions
+  const closeDrawer = () => {
+    const drawer = document.getElementById("admin-drawer");
+    if (drawer) drawer.checked = false;
+  };
 
   useEffect(() => {
     getInventoryRequests();
@@ -163,6 +170,7 @@ const AdminLayout = () => {
                   <Link
                     key={path}
                     to={path}
+                    onClick={closeDrawer}
                     className={`flex items-center gap-3 px-3 py-3 rounded-lg transition hover:bg-base-200 ${
                       location.pathname === path
                         ? "bg-primary text-primary-content font-semibold hover:bg-primary"

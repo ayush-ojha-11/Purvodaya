@@ -1,4 +1,13 @@
-import { Calendar, Loader2, Lock, Mail, MapPin, User } from "lucide-react";
+import {
+  Calendar,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Mail,
+  MapPin,
+  User,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
@@ -12,6 +21,7 @@ const Register = () => {
   });
   const navigate = useNavigate();
   const { isLoggingIn, register, authUser } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (authUser?.role === "admin") {
@@ -108,16 +118,29 @@ const Register = () => {
             </label>
             <div className="relative">
               <Lock className="absolute z-10 left-3 top-3.5 w-3.5 h-3.5 text-base-content" />
+
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 autoComplete="current-password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
                 required
-                className="input w-full pl-10"
+                className="input w-full pl-10 pr-10"
               />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-3.5 text-base-content opacity-70 hover:opacity-100"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
           </div>
           {/* Location */}
