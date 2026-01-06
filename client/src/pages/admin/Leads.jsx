@@ -272,7 +272,7 @@ const Leads = () => {
 
             <div
               className={`flex-col item-center justify-center ${
-                page === totalPages ? "hidden" : "flex"
+                totalPages === 1 ? "hidden" : "flex"
               }`}
             >
               <p className="text-center mb-1">

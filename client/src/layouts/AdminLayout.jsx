@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   Users,
@@ -66,6 +66,7 @@ const AdminLayout = () => {
   );
 
   const { fetchPendingLeadsCount, pendingLeadsCount } = useLeadStore();
+  const navigate = useNavigate();
 
   const numberofRequests = inventoryRequests.length;
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -150,7 +151,12 @@ const AdminLayout = () => {
           <div className="drawer-content flex flex-col min-h-screen">
             {/* top bar */}
             <div className="w-full flex justify-between items-center p-4 bg-base-200">
-              <h1 className="text-xl text-primary font-bold">Purvodaya</h1>
+              <h1
+                className="text-xl text-primary font-bold"
+                onClick={() => navigate("/admin/dashboard")}
+              >
+                Purvodaya
+              </h1>
               <label htmlFor="admin-drawer">
                 <Menu className="size-6" />
               </label>
