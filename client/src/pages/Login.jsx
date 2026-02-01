@@ -8,17 +8,20 @@ import toast from "react-hot-toast";
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotDialog, setShowForgotDialog] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
 
   const navigate = useNavigate();
   // Subscribing to parts of useAuthStore using selector functions
   const login = useAuthStore((state) => state.login);
   const isLoggingIn = useAuthStore((state) => state.isLoggingIn);
   const authUser = useAuthStore((state) => state.authUser);
+  const forgotPassword = useAuthStore((state) => state.forgotPassword);
 
   useEffect(() => {
     if (authUser) {
       navigate(
-        authUser.role === "admin" ? "/admin/dashboard" : "/employee/dashboard"
+        authUser.role === "admin" ? "/admin/dashboard" : "/employee/dashboard",
       );
     }
   }, [authUser, navigate]);
@@ -43,7 +46,7 @@ const Login = () => {
       const user = await login(formData);
       if (user) {
         navigate(
-          user.role === "admin" ? "/admin/dashboard" : "/employee/dashboard"
+          user.role === "admin" ? "/admin/dashboard" : "/employee/dashboard",
         );
       }
     }
@@ -111,6 +114,15 @@ const Login = () => {
             </div>
           </div>
 
+          <div className="text-end">
+            <span
+              onClick={() => setShowForgotDialog(true)}
+              className="text-sm text-gray-500 hover:text-gray-800 cursor-pointer"
+            >
+              Forgot Password?
+            </span>
+          </div>
+
           <button
             type="submit"
             className="btn btn-primary w-full"
@@ -132,6 +144,50 @@ const Login = () => {
           </Link>{" "}
         </p>
       </div>
+      {showForgotDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-sm bg-base-100 rounded-xl p-6 space-y-4">
+            <h3 className="text-lg font-semibold">Reset Password</h3>
+            <p className="text-sm text-base-content/70">
+              Enter your registered email
+            </p>
+
+            <input
+              type="email"
+              value={forgotEmail}
+              onChange={(e) => setForgotEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="input w-full"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                className="btn btn-ghost"
+                onClick={() => setShowForgotDialog(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={async () => {
+                  if (!/\S+@\S+\.\S+/.test(forgotEmail)) {
+                    return toast.error("Enter a valid email");
+                  }
+
+                  const ok = await forgotPassword(forgotEmail);
+                  if (ok) {
+                    toast.success("Reset email sent! Check your mail");
+                    setShowForgotDialog(false);
+                    setForgotEmail("");
+                  }
+                }}
+              >
+                Send Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

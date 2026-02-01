@@ -10,6 +10,8 @@ const useAuthStore = create(
     persist((set) => ({
       authUser: null,
       isLoggingIn: false,
+      isSendingReset: false,
+      isResettingPassword: false,
 
       register: async (formData) => {
         set({ isLoggingIn: true });
@@ -52,8 +54,50 @@ const useAuthStore = create(
           toast.error(error.response.data.message);
         }
       },
-    }))
-  )
-);
+      forgotPassword: async (email) => {
+        set({ isSendingReset: true });
+        try {
+          const res = await axiosInstance.post("/auth/forgot-password", {
+            email,
+          });
 
+          if (res.status === 200) {
+            return true;
+          } else {
+            return false;
+          }
+        } catch (error) {
+          toast.error(error.response.data.message);
+          console.error(error);
+          return false;
+        } finally {
+          set({ isSendingReset: false });
+        }
+      },
+
+      resetPassword: async (token, password) => {
+        set({ isResettingPassword: true });
+
+        try {
+          const res = await axiosInstance.post(
+            `/auth/reset-password/${token}`,
+            {
+              password,
+            },
+          );
+          if (res.status === 200) {
+            return true;
+          } else {
+            return false;
+          }
+        } catch (error) {
+          console.error("Error in resetPassword (useAuthStore)", error);
+          toast.error(error.response.data.message);
+        } finally {
+          set({ isResettingPassword: false });
+        }
+      },
+    })),
+  ),
+);
 export default useAuthStore;

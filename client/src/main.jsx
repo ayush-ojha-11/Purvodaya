@@ -21,6 +21,7 @@ import EmployeeInventory from "./pages/EmployeeInventory.jsx";
 import EmployeeLeads from "./pages/EmployeeLeads.jsx";
 import Leads from "./pages/admin/Leads.jsx";
 import Projects from "./pages/admin/Projects.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 const appRouter = createBrowserRouter([
   {
@@ -39,6 +40,10 @@ const appRouter = createBrowserRouter([
       {
         path: "/login",
         element: <Login />,
+      },
+      {
+        path: "/reset-password/:token",
+        element: <ResetPassword />,
       },
       //Protected Admin Routes
       {
@@ -89,5 +94,5 @@ const appRouter = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <RouterProvider router={appRouter} />
+  <RouterProvider router={appRouter} />,
 );

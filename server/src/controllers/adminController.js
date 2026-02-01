@@ -20,7 +20,7 @@ export const getAdminDashboardStats = async (req, res) => {
       Inventory.countDocuments(),
     ]);
 
-    res.status(200).json({
+    await res.status(200).json({
       employeesCount,
       totalAttendance,
       totalProjects,
@@ -28,7 +28,7 @@ export const getAdminDashboardStats = async (req, res) => {
       totalLeads,
     });
   } catch (error) {
-    console.log("Error in adminController (getAdminDashboardStats)");
+    console.log("Error in adminController (getAdminDashboardStats)", error);
     res.status(500).json({ message: "Internal server error!" });
   }
 };
