@@ -114,7 +114,7 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="text-end">
+          <div className="text-end hidden">
             <span
               onClick={() => setShowForgotDialog(true)}
               className="text-sm text-gray-500 hover:text-gray-800 cursor-pointer"
@@ -125,7 +125,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="btn btn-primary w-full"
+            className="btn btn-primary w-full mt-2"
             disabled={isLoggingIn}
           >
             {isLoggingIn ? (

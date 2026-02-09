@@ -32,7 +32,7 @@ const LeadCard = ({
       <h3 className="font-semibold text-gray-900">{lead.clientName}</h3>
       <span
         className={`px-2 py-0.5 text-xs rounded-full border ${getStatusBadge(
-          lead.status
+          lead.status,
         )}`}
       >
         {lead.status || "Pending"}
@@ -223,7 +223,7 @@ const Leads = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto min-h-screen pb-16 p-4">
+    <div className="max-w-6xl mx-auto min-h-screen pb-16 p-4">
       {/* Header */}
       <div className="flex flex-row justify-between items-center mb-6 gap-4 p-2">
         <div>
@@ -318,7 +318,7 @@ const Leads = () => {
                     <td className="p-4">
                       <span
                         className={`px-3 py-1 text-xs rounded-full border ${getStatusBadge(
-                          lead.status
+                          lead.status,
                         )}`}
                       >
                         {lead.status || "Pending"}
@@ -496,8 +496,8 @@ const Leads = () => {
                     selectedLead.status === "pending"
                       ? "bg-yellow-100 text-yellow-700"
                       : selectedLead.status === "confirmed"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
                   }`}
                 >
                   {selectedLead.status}

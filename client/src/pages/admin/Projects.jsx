@@ -23,7 +23,7 @@ const ProjectMobile = ({ project, getStatusBadge, onDelete, onViewFull }) => (
       <h3 className="font-semibold text-gray-900">{project.clientName}</h3>
       <span
         className={`px-2 py-0.5 text-xs rounded-full border ${getStatusBadge(
-          project.status
+          project.status,
         )}`}
       >
         {project.status || "Pending"}
@@ -157,7 +157,7 @@ const Projects = () => {
     );
   }
   return (
-    <div className="max-w-5xl mx-auto min-h-screen pb-16 p-4">
+    <div className="max-w-6xl mx-auto min-h-screen pb-16 p-4">
       <div className="flex flex-row justify-between items-center mb-6 gap-4 p-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-primary">
@@ -245,7 +245,7 @@ const Projects = () => {
                     <td className="p-4">
                       <span
                         className={`px-3 py-1 text-xs rounded-full border ${getStatusBadge(
-                          project.status
+                          project.status,
                         )}`}
                       >
                         {project.status || "Pending"}
@@ -385,7 +385,7 @@ const Projects = () => {
                                 onConfirm: async () => {
                                   await updateProjectStatus(
                                     selectedProject._id,
-                                    nextStatus
+                                    nextStatus,
                                   );
                                   setConfirmState({ open: false });
                                   setFullProjectView(false);
@@ -417,7 +417,7 @@ const Projects = () => {
                       <p>Started:</p>
                       <p>
                         {new Date(
-                          selectedProject.createdAt
+                          selectedProject.createdAt,
                         ).toLocaleDateString()}
                       </p>
                     </div>

@@ -127,6 +127,7 @@ export const forgotPassword = async (req, res) => {
       await user.save({ validateBeforeSave: false });
 
       const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+      console.log(resetUrl);
 
       // fire-and-forget email
       sendResetEmail(user.email, resetUrl).catch((err) =>
