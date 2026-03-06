@@ -101,7 +101,7 @@ const Leads = () => {
     allLeads,
     isLoading,
     fetchAllLeads,
-    totalLeads,
+    totalPendingLeads,
     deleteLead,
     deleteAllLeads,
     updateLeadStatus,
@@ -214,6 +214,11 @@ const Leads = () => {
     }
   };
 
+  // pending leads
+  const pendingLeads = allLeads.filter(
+    (lead) => !lead.status || lead.status.toLowerCase() === "pending",
+  );
+
   if (isLoading && page === 1) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -233,10 +238,12 @@ const Leads = () => {
           <p className="text-sm text-gray-500">
             Manage and track incoming leads
           </p>
-          <p className="font-mono mt-1">Total leads: {totalLeads}</p>
+          <p className="font-mono mt-1">
+            Total Pending leads: {totalPendingLeads}
+          </p>
         </div>
 
-        {allLeads.length > 0 && (
+        {pendingLeads.length > 0 && (
           <button
             onClick={handleDeleteAll}
             disabled={isDeletingAll}
@@ -249,7 +256,7 @@ const Leads = () => {
       </div>
 
       {/* Empty */}
-      {allLeads.length === 0 ? (
+      {pendingLeads.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-500">
           <AlertTriangle size={48} className="mb-4 text-gray-300" />
           <p>No leads found</p>
@@ -258,7 +265,7 @@ const Leads = () => {
         <>
           {/* ---------------- Mobile ---------------- */}
           <div className="md:hidden space-y-4">
-            {allLeads.map((lead) => (
+            {pendingLeads.map((lead) => (
               <LeadCard
                 key={lead._id}
                 lead={lead}
@@ -303,7 +310,6 @@ const Leads = () => {
               <thead className="bg-gray-50 border-b text-xs uppercase">
                 <tr>
                   <th className="p-4">Name</th>
-                  <th className="p-4">Contact</th>
                   <th className="p-4">Status</th>
                   <th className="p-4">Sent By</th>
                   <th className="p-4">Last updated</th>
@@ -311,10 +317,9 @@ const Leads = () => {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {allLeads.map((lead) => (
+                {pendingLeads.map((lead) => (
                   <tr key={lead._id} className="hover:bg-gray-50">
                     <td className="p-4 font-medium">{lead.clientName}</td>
-                    <td className="p-4">{lead.clientContact}</td>
                     <td className="p-4">
                       <span
                         className={`px-3 py-1 text-xs rounded-full border ${getStatusBadge(

@@ -6,7 +6,7 @@ const initialState = {
   leads: [],
   allLeads: [],
   totalPages: 1,
-  totalLeads: 0,
+  totalPendingLeads: 0,
   page: 1,
   isSubmitting: false,
   isLoading: false,
@@ -60,7 +60,7 @@ const useLeadStore = create((set) => ({
         allLeads: res.data.leads,
         totalPages: res.data.totalPages,
         page: page,
-        totalLeads: res.data.totalLeads,
+        totalPendingLeads: res.data.totalPendingLeads,
       });
     } catch (error) {
       toast.error(error?.response?.data.message);
@@ -103,7 +103,7 @@ const useLeadStore = create((set) => ({
         // refresh without reload
         set((state) => ({
           allLeads: state.allLeads.filter((lead) => lead._id !== id),
-          totalLeads: state.totalLeads - 1,
+          totalPendingLeads: state.totalPendingLeads - 1,
         }));
 
         toast.success(res.data.message);
@@ -121,7 +121,7 @@ const useLeadStore = create((set) => ({
       if (res.status === 200) {
         set(() => ({
           allLeads: [],
-          totalLeads: 0,
+          totalPendingLeads: 0,
         }));
       }
     } catch (error) {

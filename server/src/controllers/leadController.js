@@ -8,13 +8,14 @@ export const getAllLeads = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const [leads, total] = await Promise.all([
+    const [leads, total, totalPendingLeads] = await Promise.all([
       Lead.find()
         .populate("employeeId", "name email")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
       Lead.countDocuments(),
+      Lead.countDocuments({ status: "pending" }),
     ]);
 
     res.status(200).json({
@@ -22,6 +23,7 @@ export const getAllLeads = async (req, res) => {
       totalPages: Math.ceil(total / limit),
       currentPage: page,
       totalLeads: total,
+      totalPendingLeads,
     });
   } catch (error) {
     console.log("Error in leadController (getAllLeads)", error);
@@ -109,7 +111,7 @@ export const rejectLead = async (req, res) => {
         rejectionReason: reason,
         updatedAt: Date.now(),
       },
-      { new: true }
+      { new: true },
     );
     if (!lead) return res.status(404).json({ message: "Lead not found" });
     res.status(200).json({ message: "Lead rejected" });

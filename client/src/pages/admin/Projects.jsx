@@ -145,7 +145,7 @@ const Projects = () => {
       case "rejected":
         return "bg-red-100 text-red-800 border-red-200";
       default:
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "bg-red-100 text-red-800 border-red-200";
     }
   };
 
@@ -231,7 +231,6 @@ const Projects = () => {
               <thead className="bg-gray-50 border-b text-xs uppercase">
                 <tr>
                   <th className="p-4">Client Name</th>
-                  <th className="p-4">Contact</th>
                   <th className="p-4">Status</th>
                   <th className="p-4">Last updated</th>
                   <th className="p-4 text-right">Actions</th>
@@ -241,7 +240,6 @@ const Projects = () => {
                 {allProjects.map((project) => (
                   <tr key={project._id} className="hover:bg-gray-50">
                     <td className="p-4 font-medium">{project.clientName}</td>
-                    <td className="p-4">{project.clientContact}</td>
                     <td className="p-4">
                       <span
                         className={`px-3 py-1 text-xs rounded-full border ${getStatusBadge(

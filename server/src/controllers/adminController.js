@@ -10,13 +10,13 @@ export const getAdminDashboardStats = async (req, res) => {
       employeesCount,
       totalAttendance,
       totalProjects,
-      totalLeads,
+      totalPendingLeads,
       totalInventory,
     ] = await Promise.all([
       User.countDocuments({ role: "employee" }),
       Attendance.countDocuments(),
       Project.countDocuments(),
-      Lead.countDocuments(),
+      Lead.countDocuments({ status: "pending" }),
       Inventory.countDocuments(),
     ]);
 
@@ -25,7 +25,7 @@ export const getAdminDashboardStats = async (req, res) => {
       totalAttendance,
       totalProjects,
       totalInventory,
-      totalLeads,
+      totalPendingLeads,
     });
   } catch (error) {
     console.log("Error in adminController (getAdminDashboardStats)", error);
