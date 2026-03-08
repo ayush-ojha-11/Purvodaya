@@ -15,87 +15,68 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../lib/helper";
 
-/* -------------------- Mobile Card -------------------- */
-const LeadCard = ({
-  lead,
-  getStatusBadge,
-  onApprove,
-  onReject,
-  onDelete,
-  onViewFull,
-}) => (
+/* ─── Mobile Card ─────────────────────────────────────────────────────── */
+const LeadCard = ({ lead, onApprove, onReject, onDelete, onViewFull }) => (
   <div
-    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+    className="relative bg-white rounded-xl p-4 shadow-sm border border-amber-200 cursor-pointer transition hover:shadow-md active:scale-[0.99]"
     onClick={onViewFull}
   >
-    <div className="flex justify-between items-start mb-2">
-      <h3 className="font-semibold text-gray-900">{lead.clientName}</h3>
-      <span
-        className={`px-2 py-0.5 text-xs rounded-full border ${getStatusBadge(
-          lead.status,
-        )}`}
-      >
-        {lead.status || "Pending"}
-      </span>
-    </div>
-
-    <p className="text-sm text-gray-600 mb-1">📞 {lead.clientContact}</p>
-    <p className="text-xs text-gray-600 mb-3">
-      Submitted by: {lead?.employeeId?.name || "NA"}
-    </p>
-
-    <div className="flex justify-between items-center">
-      <p className="text-xs">
-        Last updated:{" "}
-        {lead.updatedAt
-          ? formatDate(lead.updatedAt)
-          : formatDate(lead.createdAt)}
+    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-amber-400" />
+    <div className="pl-1">
+      <div className="flex justify-between items-start mb-1">
+        <h3 className="font-semibold text-gray-900">{lead.clientName}</h3>
+        <span className="px-2 py-0.5 text-[11px] rounded-full border bg-amber-50 text-amber-700 border-amber-200">
+          Pending
+        </span>
+      </div>
+      <p className="text-xs font-mono text-gray-500 mb-0.5">
+        📞 {lead.clientContact}
       </p>
-      <div className="flex gap-3">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (lead.status === "confirmed") return;
-            onApprove();
-          }}
-          className={`${
-            lead.status === "confirmed"
-              ? "p-2 text-gray-400 opacity-60"
-              : "p-2 text-green-600 hover:bg-green-50 rounded-full"
-          }`}
-        >
-          <CheckCircle size={18} />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (lead.status === "confirmed" || lead.status === "rejected")
-              return;
-            onReject();
-          }}
-          className={`${
-            lead.status === "confirmed" || lead.status === "rejected"
-              ? "p-2 text-gray-400 opacity-60"
-              : "p-2 text-orange-500 hover:bg-orange-50 rounded-full"
-          }`}
-        >
-          <XCircle size={18} />
-        </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(lead._id);
-          }}
-          className="p-2 text-red-600 hover:bg-red-50 rounded-full"
-        >
-          <Trash2 size={18} />
-        </button>
+      <p className="text-xs text-gray-500 mb-0.5">📍 {lead.city || "—"}</p>
+      <p className="text-xs text-gray-400 mb-3">
+        By: {lead?.employeeId?.name || "NA"}
+      </p>
+      <div className="flex justify-between items-center">
+        <p className="text-[11px] text-gray-400">
+          {lead.updatedAt
+            ? formatDate(lead.updatedAt)
+            : formatDate(lead.createdAt)}
+        </p>
+        <div className="flex gap-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onApprove();
+            }}
+            className="p-1.5 rounded-lg hover:bg-emerald-50 transition"
+          >
+            <CheckCircle size={17} className="text-emerald-600" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onReject();
+            }}
+            className="p-1.5 rounded-lg hover:bg-orange-50 transition"
+          >
+            <XCircle size={17} className="text-orange-500" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(lead._id);
+            }}
+            className="p-1.5 rounded-lg hover:bg-red-50 transition"
+          >
+            <Trash2 size={17} className="text-red-400" />
+          </button>
+        </div>
       </div>
     </div>
   </div>
 );
 
-/* -------------------- Main -------------------- */
+/* ─── Main Component ──────────────────────────────────────────────────── */
 const Leads = () => {
   const {
     allLeads,
@@ -108,6 +89,7 @@ const Leads = () => {
     page,
     totalPages,
   } = useLeadStore();
+
   const authUser = useAuthStore((state) => state.authUser);
   const navigate = useNavigate();
 
@@ -115,36 +97,28 @@ const Leads = () => {
   const [confirmState, setConfirmState] = useState({
     open: false,
     green: false,
-    title: "",
-    message: "",
-    onConfirm: null,
   });
-
   const [fullLeadView, setFullLeadView] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
 
   useEffect(() => {
     if (!authUser) navigate("/");
   });
-
-  // to disable scroll of background when lead is opened
   useEffect(() => {
-    if (fullLeadView) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = fullLeadView ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [fullLeadView]);
-
   useEffect(() => {
-    fetchAllLeads(); // reset on mount
+    fetchAllLeads();
   }, [fetchAllLeads]);
 
-  // handle delete
-  const handleDeleteAll = async () => {
+  const pendingLeads = allLeads.filter(
+    (l) => !l.status || l.status.toLowerCase() === "pending",
+  );
+
+  const handleDeleteAll = () => {
     setConfirmState({
       open: true,
       title: "Delete All Leads",
@@ -161,7 +135,7 @@ const Leads = () => {
   const handleDeleteSingle = (id) => {
     setConfirmState({
       open: true,
-      title: "Delete lead",
+      title: "Delete Lead",
       message: "Delete this lead? This cannot be undone.",
       onConfirm: async () => {
         await deleteLead(id);
@@ -170,54 +144,19 @@ const Leads = () => {
     });
   };
 
-  // handle reject and confirm of lead
-  const handleLeadStatus = async (lead, status) => {
-    if (status === "rejected") {
-      setConfirmState({
-        open: true,
-        title: "Reject Lead",
-        message: `Reject ${lead.clientName} lead?`,
-        onConfirm: async () => {
-          await updateLeadStatus(lead._id, "rejected");
-          setConfirmState({ open: false });
-        },
-      });
-    }
-    if (status === "confirmed") {
-      setConfirmState({
-        open: true,
-        title: "Confirm Lead",
-        green: true,
-        message: `Confirm ${lead.clientName} lead?`,
-        onConfirm: async () => {
-          await updateLeadStatus(lead._id, "confirmed");
-          setConfirmState({ open: false });
-        },
-      });
-    }
+  const handleLeadStatus = (lead, status) => {
+    const isConfirm = status === "confirmed";
+    setConfirmState({
+      open: true,
+      green: isConfirm,
+      title: isConfirm ? "Confirm Lead" : "Reject Lead",
+      message: `${isConfirm ? "Confirm" : "Reject"} lead for ${lead.clientName}?`,
+      onConfirm: async () => {
+        await updateLeadStatus(lead._id, status);
+        setConfirmState({ open: false });
+      },
+    });
   };
-
-  const openFullLeadView = (lead) => {
-    setSelectedLead(lead);
-    setFullLeadView(true);
-  };
-
-  const getStatusBadge = (status) => {
-    switch (status?.toLowerCase()) {
-      case "confirmed":
-      case "approved":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "rejected":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    }
-  };
-
-  // pending leads
-  const pendingLeads = allLeads.filter(
-    (lead) => !lead.status || lead.status.toLowerCase() === "pending",
-  );
 
   if (isLoading && page === 1) {
     return (
@@ -230,7 +169,7 @@ const Leads = () => {
   return (
     <div className="max-w-6xl mx-auto min-h-screen pb-16 p-4">
       {/* Header */}
-      <div className="flex flex-row justify-between items-center mb-6 gap-4 p-2">
+      <div className="flex flex-row justify-between items-start mb-6 gap-4 p-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-primary">
             Lead Management
@@ -238,18 +177,15 @@ const Leads = () => {
           <p className="text-sm text-gray-500">
             Manage and track incoming leads
           </p>
-          <p className="font-mono mt-1">
-            Total Pending leads: {totalPendingLeads}
-          </p>
+          <p className="font-mono mt-1 text-sm">Pending: {totalPendingLeads}</p>
         </div>
-
         {pendingLeads.length > 0 && (
           <button
             onClick={handleDeleteAll}
             disabled={isDeletingAll}
-            className="flex items-center gap-2 px-2 py-1 bg-red-50 text-red-600 border rounded-lg text-xs md:text-sm hover:cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm hover:bg-red-100 transition"
           >
-            <Trash2 size={12} />
+            <Trash2 size={14} />
             {isDeletingAll ? "Deleting..." : "Delete All"}
           </button>
         )}
@@ -257,156 +193,149 @@ const Leads = () => {
 
       {/* Empty */}
       {pendingLeads.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <AlertTriangle size={48} className="mb-4 text-gray-300" />
-          <p>No leads found</p>
+          <p>No pending leads</p>
         </div>
       ) : (
         <>
-          {/* ---------------- Mobile ---------------- */}
-          <div className="md:hidden space-y-4">
+          {/* Mobile */}
+          <div className="md:hidden space-y-3">
             {pendingLeads.map((lead) => (
               <LeadCard
                 key={lead._id}
                 lead={lead}
-                getStatusBadge={getStatusBadge}
                 onApprove={() => handleLeadStatus(lead, "confirmed")}
                 onReject={() => handleLeadStatus(lead, "rejected")}
                 onDelete={handleDeleteSingle}
-                onViewFull={() => openFullLeadView(lead)}
+                onViewFull={() => {
+                  setSelectedLead(lead);
+                  setFullLeadView(true);
+                }}
               />
             ))}
-
-            <div
-              className={`flex-col item-center justify-center ${
-                totalPages === 1 ? "hidden" : "flex"
-              }`}
-            >
-              <p className="text-center mb-1">
-                Page: {page} of {totalPages}
-              </p>
-              <div className="flex gap-4 justify-center">
-                <button
-                  onClick={() => fetchAllLeads(true, page - 1)}
-                  className="btn"
-                  disabled={page === 1}
-                >
-                  Prev <ChevronLeft />
-                </button>
-                <button
-                  onClick={() => fetchAllLeads(true, page + 1)}
-                  className="btn"
-                  disabled={page === totalPages}
-                >
-                  <ChevronRight /> Next
-                </button>
+            {totalPages > 1 && (
+              <div className="flex flex-col items-center gap-2 pt-2">
+                <p className="text-sm text-gray-500">
+                  Page {page} of {totalPages}
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => fetchAllLeads(true, page - 1)}
+                    className="btn"
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft size={16} /> Prev
+                  </button>
+                  <button
+                    onClick={() => fetchAllLeads(true, page + 1)}
+                    className="btn"
+                    disabled={page === totalPages}
+                  >
+                    Next <ChevronRight size={16} />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* ---------------- Desktop ---------------- */}
-          <div className="hidden md:block bg-white rounded-xl overflow-hidden">
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm">
             <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b text-xs uppercase">
+              <thead className="bg-gray-50 border-b text-xs uppercase text-gray-500 tracking-wider">
                 <tr>
-                  <th className="p-4">Name</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Sent By</th>
-                  <th className="p-4">Last updated</th>
+                  <th className="p-4">Client</th>
+                  <th className="p-4">City</th>
+                  <th className="p-4">Submitted By</th>
+                  <th className="p-4">Last Updated</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y divide-gray-100">
                 {pendingLeads.map((lead) => (
-                  <tr key={lead._id} className="hover:bg-gray-50">
-                    <td className="p-4 font-medium">{lead.clientName}</td>
+                  <tr
+                    key={lead._id}
+                    className="hover:bg-amber-50/30 transition"
+                  >
                     <td className="p-4">
-                      <span
-                        className={`px-3 py-1 text-xs rounded-full border ${getStatusBadge(
-                          lead.status,
-                        )}`}
-                      >
-                        {lead.status || "Pending"}
-                      </span>
+                      <p className="font-medium text-gray-900">
+                        {lead.clientName}
+                      </p>
+                      <p className="text-xs font-mono text-gray-400 mt-0.5">
+                        {lead.clientContact}
+                      </p>
                     </td>
-                    <td className="p-4">{lead?.employeeId?.name || "NA"}</td>
-                    <td className="p-4 text-xs">
+                    <td className="p-4 text-sm text-gray-600">
+                      {lead.city || "—"}
+                    </td>
+                    <td className="p-4 text-sm text-gray-600">
+                      {lead?.employeeId?.name || "NA"}
+                    </td>
+                    <td className="p-4 text-xs text-gray-500">
                       {lead.updatedAt
                         ? formatDate(lead.updatedAt)
                         : formatDate(lead.createdAt)}
                     </td>
-                    <td className="p-4 text-right space-x-5">
-                      <EyeIcon
-                        size={18}
-                        className="inline text-indigo-500 cursor-pointer"
-                        onClick={() => openFullLeadView(lead)}
-                      />
-                      <CheckCircle
-                        size={18}
-                        className={` inline ${
-                          lead.status === "confirmed"
-                            ? "text-gray-400 cursor-not-allowed opacity-60"
-                            : "text-green-600 cursor-pointer hover:scale-105"
-                        }
-                        `}
-                        onClick={() => {
-                          if (lead.status === "confirmed") return;
-                          handleLeadStatus(lead, "confirmed");
-                        }}
-                      />
-                      <XCircle
-                        size={18}
-                        className={`inline ${
-                          lead.status === "confirmed" ||
-                          lead.status === "rejected"
-                            ? "text-gray-400 cursor-not-allowed opacity-60"
-                            : "text-orange-500 cursor-pointer hover:scale-105"
-                        }`}
-                        onClick={() => {
-                          if (
-                            lead.status === "confirmed" ||
-                            lead.status === "rejected"
-                          )
-                            return;
-                          handleLeadStatus(lead, "rejected");
-                        }}
-                      />
-                      <Trash2
-                        size={18}
-                        className="inline text-red-600 cursor-pointer"
-                        onClick={() => handleDeleteSingle(lead._id)}
-                      />
+                    <td className="p-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => {
+                            setSelectedLead(lead);
+                            setFullLeadView(true);
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-indigo-50 transition"
+                        >
+                          <EyeIcon size={16} className="text-indigo-500" />
+                        </button>
+                        <button
+                          onClick={() => handleLeadStatus(lead, "confirmed")}
+                          className="p-1.5 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
+                        >
+                          <CheckCircle size={16} className="text-emerald-600" />
+                        </button>
+                        <button
+                          onClick={() => handleLeadStatus(lead, "rejected")}
+                          className="p-1.5 rounded-lg hover:bg-orange-50 transition cursor-pointer"
+                        >
+                          <XCircle size={16} className="text-orange-500" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSingle(lead._id)}
+                          className="p-1.5 rounded-lg hover:bg-red-50 transition"
+                        >
+                          <Trash2 size={16} className="text-red-400" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
-            {/* Desktop Pagination */}
-            <div className="flex justify-between items-center p-4 border-t bg-gray-50">
-              <span className="text-sm">
+            <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
+              <span className="text-sm text-gray-500">
                 Page {page} of {totalPages}
               </span>
-              <div className="flex gap-4">
+              <div className="flex gap-2">
                 <button
                   className="btn"
                   disabled={page === 1}
                   onClick={() => fetchAllLeads(true, page - 1)}
                 >
-                  Prev <ChevronLeft size={16} />
+                  <ChevronLeft size={16} /> Prev
                 </button>
                 <button
                   className="btn"
                   disabled={page === totalPages}
                   onClick={() => fetchAllLeads(true, page + 1)}
                 >
-                  <ChevronRight size={16} /> Next
+                  Next <ChevronRight size={16} />
                 </button>
               </div>
             </div>
           </div>
         </>
       )}
+
       <ConfirmDialog
         open={confirmState.open}
         title={confirmState.title}
@@ -416,148 +345,154 @@ const Leads = () => {
         onConfirm={confirmState.onConfirm}
       />
 
+      {/* Modal */}
       {fullLeadView && selectedLead && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-2">
-          {/* Backdrop */}
           <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setFullLeadView(false)}
           />
-
-          {/* Modal */}
-          <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 sm:p-4 shadow-sm">
-            {/* Header */}
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-800">
-                Lead Details
-              </h3>
-
-              <button
-                onClick={() => setFullLeadView(false)}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
-              >
-                Close <X className="text-red-500" size={18} />
-              </button>
-            </div>
-
-            {/* Client Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Client Name</p>
-                <p className="font-medium wrap-break-word">
-                  {selectedLead.clientName}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">Contact</p>
-                <p className="font-medium wrap-break-word">
-                  {selectedLead.clientContact}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">Address</p>
-                <p className="font-medium wrap-break-word">
-                  {selectedLead.full_address}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">City</p>
-                <p className="font-medium wrap-break-word">
-                  {selectedLead.city}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">Pincode</p>
-                <p className="font-medium wrap-break-word">
-                  {selectedLead.pincode}
-                </p>
-              </div>
-            </div>
-
-            <hr className="my-4" />
-
-            {/* Project Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm text-gray-500">Type</p>
-                <span className="inline-block rounded bg-blue-100 px-2 py-1 text-sm font-medium text-blue-700">
-                  {selectedLead.type}
-                </span>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">Capacity (kW)</p>
-                <p className="font-medium">{selectedLead.kw}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-gray-500">Status</p>
-                <span
-                  className={`inline-block rounded px-2 py-1 text-sm font-medium ${
-                    selectedLead.status === "pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : selectedLead.status === "confirmed"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                  }`}
+          <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white shadow-2xl mx-3">
+            <div className="h-1.5 rounded-t-2xl bg-amber-400" />
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Lead Details
+                  </h3>
+                  <p className="text-sm text-gray-400">
+                    Submitted{" "}
+                    {new Date(selectedLead.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setFullLeadView(false)}
+                  className="p-1 rounded-lg hover:bg-gray-100 transition"
                 >
-                  {selectedLead.status}
-                </span>
-              </div>
-            </div>
-
-            {/* Rejection Reason */}
-            {selectedLead.status === "rejected" && (
-              <div className="mt-4 rounded border border-red-200 bg-red-50 p-3">
-                <p className="text-sm font-medium text-red-700">
-                  Rejection Reason
-                </p>
-                <p className="text-sm text-red-600 wrap-break-word">
-                  {selectedLead.rejectionReason || "Not specified"}
-                </p>
-              </div>
-            )}
-
-            <hr className="my-4" />
-
-            {/* Employee Info */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between text-sm text-gray-600">
-              <div>
-                <p className="font-medium text-gray-800 wrap-break-word">
-                  Submitted By: {selectedLead.employeeId?.name}
-                </p>
-                <p className="wrap-break-word">
-                  {selectedLead.employeeId?.email}
-                </p>
+                  <X size={18} className="text-red-400" />
+                </button>
               </div>
 
-              <div className="sm:text-right">
-                <p>
-                  Created:{" "}
-                  {new Date(selectedLead.createdAt).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
+              {/* Quick Actions */}
+              <div className="flex gap-2 mb-5">
+                <button
+                  onClick={() => {
+                    setFullLeadView(false);
+                    handleLeadStatus(selectedLead, "confirmed");
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition cursor-pointer"
+                >
+                  <CheckCircle size={15} /> Confirm Lead
+                </button>
+                <button
+                  onClick={() => {
+                    setFullLeadView(false);
+                    handleLeadStatus(selectedLead, "rejected");
+                  }}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition cursor-pointer"
+                >
+                  <XCircle size={15} /> Reject Lead
+                </button>
+              </div>
+
+              {/* Client Info */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
+                  Client Info
                 </p>
-                <p>
-                  Updated:{" "}
-                  {new Date(selectedLead.updatedAt).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                    hour12: true,
-                  })}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-gray-400">Name</p>
+                    <p className="font-semibold text-gray-800">
+                      {selectedLead.clientName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Contact</p>
+                    <p className="font-mono text-sm text-gray-700">
+                      {selectedLead.clientContact}
+                    </p>
+                  </div>
+                  {selectedLead.full_address && (
+                    <div className="sm:col-span-2">
+                      <p className="text-xs text-gray-400">Address</p>
+                      <p className="text-sm text-gray-700">
+                        {selectedLead.full_address}
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs text-gray-400">City</p>
+                    <p className="text-sm text-gray-700">
+                      {selectedLead.city || "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Pincode</p>
+                    <p className="text-sm text-gray-700">
+                      {selectedLead.pincode || "—"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Project Info */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
+                  Project Info
                 </p>
+                <div className="flex gap-6">
+                  <div>
+                    <p className="text-xs text-gray-400">Type</p>
+                    <span className="inline-block mt-1 rounded-lg bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-700">
+                      {selectedLead.type}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Capacity</p>
+                    <p className="font-semibold text-gray-800 mt-1">
+                      {selectedLead.kw} kW
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex justify-between items-start text-sm">
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Submitted By</p>
+                  <p className="font-medium text-gray-800">
+                    {selectedLead.employeeId?.name || "NA"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {selectedLead.employeeId?.email || ""}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-400 mb-1">Timestamps</p>
+                  <p className="text-xs text-gray-600">
+                    Created:{" "}
+                    {new Date(selectedLead.createdAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true,
+                    })}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    Updated:{" "}
+                    {new Date(selectedLead.updatedAt).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true,
+                    })}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
