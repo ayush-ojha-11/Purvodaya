@@ -1,13 +1,14 @@
 import dayjs from "dayjs";
 import Attendance from "../models/Attendance.js";
 import InventoryRequest from "../models/InventoryRequest.js";
+import Project from "../models/Project.js";
+import Lead from "../models/Lead.js";
 
 export const getEmployeeDashboardStats = async (req, res) => {
   try {
     const employeeId = req.user._id;
 
     //Attendance summary for current month
-
     const start = dayjs().startOf("month").format("YYYY-MM-DD");
     const end = dayjs().endOf("month").format("YYYY-MM-DD");
 
@@ -35,9 +36,14 @@ export const getEmployeeDashboardStats = async (req, res) => {
       rejected: requests.filter((r) => r.status === "rejected").length,
     };
 
+    const totalProjects = await Project.countDocuments();
+    const totalEmployeeLeads = await Lead.countDocuments({ employeeId });
+
     return res.status(200).json({
       presentDays,
       absentDays,
+      totalProjects,
+      totalEmployeeLeads,
       inventoryRequestStats: requestStats,
     });
   } catch (error) {

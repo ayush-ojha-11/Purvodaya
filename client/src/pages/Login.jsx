@@ -114,7 +114,7 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="text-end hidden">
+          <div className="text-end">
             <span
               onClick={() => setShowForgotDialog(true)}
               className="text-sm text-gray-500 hover:text-gray-800 cursor-pointer"

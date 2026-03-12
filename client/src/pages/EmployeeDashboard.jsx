@@ -2,7 +2,14 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/useAuthStore";
 import useEmployeeStore from "../store/useEmployeeStore";
-import { FaUserCheck, FaUserTimes, FaPercent } from "react-icons/fa";
+
+import {
+  FaUserCheck,
+  FaUserTimes,
+  FaPercent,
+  FaClipboardList,
+} from "react-icons/fa";
+import { UserPlus } from "lucide-react";
 
 const getCurrentMonthYear = () => {
   const date = new Date();
@@ -12,85 +19,132 @@ const getCurrentMonthYear = () => {
   });
 };
 
-const Card = ({ icon, title, value, color }) => (
-  <div className="flex items-center p-5 bg-white rounded-lg shadow hover:shadow-md transition duration-300 border border-gray-200">
-    <div
-      className={`text-3xl mr-4 p-3 rounded-full bg-opacity-10`}
-      style={{ color, backgroundColor: `${color}20` }}
-    >
-      {icon}
-    </div>
-    <div>
-      <h4 className="text-md font-semibold text-gray-700  mb-1">{title}</h4>
-      <p className="text-2xl font-bold text-gray-900 ">{value}</p>
-    </div>
-  </div>
-);
-
 const EmployeeDashboard = () => {
   const navigate = useNavigate();
   const authUser = useAuthStore((state) => state.authUser);
 
-  const stats = useEmployeeStore((state) => state.stats);
-  const fetchStats = useEmployeeStore((state) => state.fetchStats);
-  const loading = useEmployeeStore((state) => state.loading);
-
-  const getAttendancePercentage = () => {
-    const percentage =
-      (stats?.presentDays / (stats?.presentDays + stats?.absentDays)) * 100;
-    return percentage.toFixed(2);
-  };
+  const { stats, fetchStats, loading } = useEmployeeStore();
 
   useEffect(() => {
-    if (!authUser) {
-      navigate("/");
-    }
+    if (!authUser) navigate("/");
   }, [authUser, navigate]);
 
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <div className="text-center text-gray-500 text-lg dark:text-gray-400">
-          Loading dashboard...
-        </div>
+  const getAttendancePercentage = () => {
+    const total = stats?.presentDays + stats?.absentDays;
+
+    if (!total) return 0;
+
+    return ((stats.presentDays / total) * 100).toFixed(1);
+  };
+
+  const handleClick = (id) => {
+    const routes = {
+      projects: "/employee/projects",
+      leads: "/employee/leads",
+    };
+
+    navigate(routes[id]);
+  };
+
+  const StatCard = ({ title, value, icon, color, id }) => (
+    <div
+      onClick={() => handleClick(id)}
+      className="flex items-center p-5 bg-white rounded-xl shadow hover:shadow-lg transition-all border border-gray-200 cursor-pointer"
+    >
+      <div
+        className="text-white text-3xl mr-4 p-3 rounded-full"
+        style={{ backgroundColor: color }}
+      >
+        {icon}
       </div>
-    );
-  }
+
+      <div>
+        <h4 className="text-md font-semibold text-gray-600">{title}</h4>
+        <p className="text-2xl font-bold text-gray-900">{value ?? 0}</p>
+      </div>
+    </div>
+  );
+
+  const statItems = [
+    {
+      id: "projects",
+      title: "Total Projects",
+      value: stats?.totalProjects,
+      icon: <FaClipboardList />,
+      color: "#3B82F6",
+    },
+    {
+      id: "leads",
+      title: "Your Leads",
+      value: stats?.totalEmployeeLeads,
+      icon: <UserPlus />,
+      color: "#F59E0B",
+    },
+    {
+      id: "attendance",
+      title: "Attendance %",
+      value: `${getAttendancePercentage()}%`,
+      icon: <FaPercent />,
+      color: "#10B981",
+    },
+    {
+      id: "present",
+      title: "Present Days",
+      value: stats?.presentDays,
+      icon: <FaUserCheck />,
+      color: "#22C55E",
+    },
+    {
+      id: "absent",
+      title: "Absent Days",
+      value: stats?.absentDays,
+      icon: <FaUserTimes />,
+      color: "#EF4444",
+    },
+  ];
+
+  const SkeletonGrid = ({ count }) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+      {Array(count)
+        .fill(0)
+        .map((_, i) => (
+          <div
+            key={i}
+            className="animate-pulse p-5 rounded-xl bg-white shadow h-32 border border-gray-300"
+          />
+        ))}
+    </div>
+  );
 
   return (
-    <div className="p-6 sm:p-6 lg:p-8 bg-gray-50  min-h-screen space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen space-y-6">
+      {/* Header */}
       <div>
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+        <h1 className="text-3xl font-bold text-gray-800">
           Welcome back, {authUser?.name ?? "Employee"} 👋
-        </h2>
-        <p className="text-sm text-gray-500  mt-1">
+        </h1>
+
+        <p className="text-sm text-gray-500 mt-1">
           Dashboard stats for {getCurrentMonthYear()}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card
-          icon={<FaPercent />}
-          title="Attendance percentage"
-          value={getAttendancePercentage()}
-        />
-        <Card
-          icon={<FaUserCheck />}
-          title="Present Days"
-          value={stats?.presentDays ?? 0}
-          color="#10B981"
-        />
-        <Card
-          icon={<FaUserTimes />}
-          title="Absent Days"
-          value={stats?.absentDays ?? 0}
-          color="#EF4444"
-        />
-      </div>
+      {/* Section */}
+      <p className="font-mono font-medium text-sm">Your work overview</p>
+
+      {loading ? (
+        <SkeletonGrid count={4} />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+          {statItems.map((item) => (
+            <StatCard key={item.id} {...item} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

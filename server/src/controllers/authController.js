@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { generateToken } from "../utils/generateToken.js";
-import { sendResetEmail } from "../utils/sendResetEmail.js";
+import { sendResetEmail } from "../utils/SendResetEmailResend.js";
 
 export const register = async (req, res) => {
   try {
@@ -126,7 +126,11 @@ export const forgotPassword = async (req, res) => {
 
       await user.save({ validateBeforeSave: false });
 
-      const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+      const resetUrl = `${
+        process.env.NODE_ENV === "production"
+          ? process.env.FRONTEND_URL_PROD
+          : process.env.FRONTEND_URL_DEV
+      }/reset-password/${resetToken}`;
       console.log(resetUrl);
 
       // fire-and-forget email

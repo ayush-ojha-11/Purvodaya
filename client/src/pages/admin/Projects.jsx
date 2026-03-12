@@ -11,6 +11,8 @@ import {
   Clock,
   Download,
   ChevronRight as Arrow,
+  Flame,
+  AlertCircle,
 } from "lucide-react";
 import { formatDate } from "../../lib/helper";
 import ConfirmDialog from "../../components/ConfirmDialog";
@@ -33,6 +35,160 @@ const getStatusBadge = (status) => {
   return "bg-sky-50 text-sky-700 border-sky-200";
 };
 
+/* ─── Progress helpers ────────────────────────────────────────────────── */
+/**
+ * Returns { percent, colorClass, bgClass, label, isStalled, stallDays }
+ * colorClass  → Tailwind text color for the percentage number
+ * barColor    → inline style hex for the progress fill (gradient-friendly)
+ */
+const getProgress = (project) => {
+  const flow = PROJECT_WORKFLOW[project.type] ?? [];
+  if (flow.length === 0) return null;
+
+  const currentIndex = flow.indexOf(project.status);
+  // If status not found treat as 0; if last step treat as 100
+  const steps = flow.length - 1 || 1;
+  const rawPercent =
+    currentIndex === -1 ? 0 : Math.round((currentIndex / steps) * 100);
+  const percent = Math.min(rawPercent, 100);
+
+  // Determine stall: last update > 7 days ago and not completed
+  const lastUpdate = project.updatedAt || project.createdAt;
+  const daysSinceUpdate = lastUpdate
+    ? Math.floor((Date.now() - new Date(lastUpdate)) / 86_400_000)
+    : 0;
+  const isStalled = !isCompleted(project.status) && daysSinceUpdate >= 7;
+
+  // Color scheme
+  let barFrom, barTo, textColor, bgTrack;
+  if (isCompleted(project.status)) {
+    barFrom = "#10b981";
+    barTo = "#059669";
+    textColor = "text-emerald-600";
+    bgTrack = "#d1fae5";
+  } else if (isStalled) {
+    barFrom = "#f97316";
+    barTo = "#dc2626";
+    textColor = "text-orange-600";
+    bgTrack = "#ffedd5";
+  } else if (percent >= 70) {
+    barFrom = "#22c55e";
+    barTo = "#16a34a";
+    textColor = "text-green-600";
+    bgTrack = "#dcfce7";
+  } else if (percent >= 40) {
+    barFrom = "#3b82f6";
+    barTo = "#6366f1";
+    textColor = "text-blue-600";
+    bgTrack = "#dbeafe";
+  } else {
+    barFrom = "#f59e0b";
+    barTo = "#f97316";
+    textColor = "text-amber-600";
+    bgTrack = "#fef3c7";
+  }
+
+  const label = isCompleted(project.status)
+    ? "Complete"
+    : isStalled
+      ? `Stalled · ${daysSinceUpdate}d`
+      : percent >= 70
+        ? "Almost done"
+        : percent >= 40
+          ? "In progress"
+          : "Just started";
+
+  return {
+    percent,
+    barFrom,
+    barTo,
+    textColor,
+    bgTrack,
+    label,
+    isStalled,
+    stallDays: daysSinceUpdate,
+    currentIndex,
+    flow,
+  };
+};
+
+/* ─── Progress Bar Component ──────────────────────────────────────────── */
+const ProgressBar = ({ project, compact = false }) => {
+  const prog = getProgress(project);
+  if (!prog) return null;
+
+  const { percent, barFrom, barTo, textColor, bgTrack, label, isStalled } =
+    prog;
+
+  if (compact) {
+    // Slim bar for table rows
+    return (
+      <div className="flex items-center gap-2 min-w-30">
+        <div
+          className="flex-1 rounded-full h-1.5 overflow-hidden"
+          style={{ background: bgTrack }}
+        >
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{
+              width: `${percent}%`,
+              background: `linear-gradient(90deg, ${barFrom}, ${barTo})`,
+            }}
+          />
+        </div>
+        <span
+          className={`text-xs font-semibold tabular-nums ${textColor} shrink-0`}
+        >
+          {percent}%
+        </span>
+        {isStalled && (
+          <Flame
+            size={12}
+            className="text-orange-500 shrink-0"
+            title={`Stalled for ${prog.stallDays} days`}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Full bar for cards / modal
+  return (
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-1.5">
+        <div className="flex items-center gap-1.5">
+          <span className={`text-xs font-semibold ${textColor}`}>{label}</span>
+          {isStalled && (
+            <span className="flex items-center gap-0.5 text-[10px] font-medium text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-full">
+              <Flame size={9} /> Stalled
+            </span>
+          )}
+        </div>
+        <span className={`text-xs font-bold tabular-nums ${textColor}`}>
+          {percent}%
+        </span>
+      </div>
+      <div
+        className="w-full rounded-full h-2 overflow-hidden"
+        style={{ background: bgTrack }}
+      >
+        <div
+          className="h-full rounded-full transition-all duration-700 ease-out"
+          style={{
+            width: `${percent}%`,
+            background: `linear-gradient(90deg, ${barFrom}, ${barTo})`,
+            boxShadow: `0 0 6px ${barFrom}66`,
+          }}
+        />
+      </div>
+      <p className="text-[10px] text-gray-400 mt-1">
+        Step {prog.currentIndex === -1 ? 0 : prog.currentIndex + 1} of{" "}
+        {prog.flow.length}
+      </p>
+    </div>
+  );
+};
+
 /* ─── Status Pipeline (visual timeline in modal) ──────────────────────── */
 const StatusPipeline = ({ flow, currentStatus }) => {
   const currentIndex = flow.indexOf(currentStatus);
@@ -47,7 +203,6 @@ const StatusPipeline = ({ flow, currentStatus }) => {
 
           return (
             <div key={step} className="flex items-center shrink-0">
-              {/* Node */}
               <div className="flex flex-col items-center">
                 <div
                   className={`
@@ -69,8 +224,6 @@ const StatusPipeline = ({ flow, currentStatus }) => {
                   {step}
                 </p>
               </div>
-
-              {/* Connector */}
               {i < flow.length - 1 && (
                 <div
                   className={`h-0.5 w-8 -mt-4 mx-1 rounded ${
@@ -89,32 +242,54 @@ const StatusPipeline = ({ flow, currentStatus }) => {
 /* ─── Mobile card ─────────────────────────────────────────────────────── */
 const ProjectMobile = ({ project, onDelete, onViewFull, isAdmin }) => {
   const done = isCompleted(project.status);
+  const prog = getProgress(project);
+
   return (
     <div
       className={`
         relative bg-white rounded-xl p-4 shadow-sm border cursor-pointer
         transition hover:shadow-md active:scale-[0.99]
-        ${done ? "border-emerald-200" : "border-gray-200"}
+        ${done ? "border-emerald-200" : prog?.isStalled ? "border-orange-200" : "border-gray-200"}
       `}
       onClick={onViewFull}
     >
-      {/* Completion stripe */}
-      {done && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl bg-emerald-400" />
-      )}
+      {/* Left stripe: green = done, orange = stalled, blue = active */}
+      <div
+        className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${
+          done
+            ? "bg-emerald-400"
+            : prog?.isStalled
+              ? "bg-orange-400"
+              : "bg-blue-400"
+        }`}
+      />
 
       <div className="flex justify-between items-start mb-1 pl-1">
         <h3 className="font-semibold text-gray-900">{project.clientName}</h3>
-        <span
-          className={`px-2 py-0.5 text-[11px] rounded-full border ${getStatusBadge(project.status)}`}
-        >
-          {project.status || "Pending"}
-        </span>
+        <div className="flex items-center gap-1.5">
+          {prog?.isStalled && (
+            <AlertCircle
+              size={14}
+              className="text-orange-500"
+              title="Project stalled"
+            />
+          )}
+          <span
+            className={`px-2 py-0.5 text-[11px] rounded-full border ${getStatusBadge(project.status)}`}
+          >
+            {project.status || "Pending"}
+          </span>
+        </div>
       </div>
 
       <p className="font-mono text-xs text-gray-500 pl-1 mb-3">
         📞 {project.clientContact}
       </p>
+
+      {/* Progress bar */}
+      <div className="pl-1 mb-3">
+        <ProgressBar project={project} />
+      </div>
 
       <div className="flex justify-between items-center pl-1">
         <p className="text-[11px] text-gray-400">
@@ -161,7 +336,7 @@ const Projects = () => {
   const [confirmState, setConfirmState] = useState({ open: false });
   const [fullProjectView, setFullProjectView] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [activeTab, setActiveTab] = useState("all"); // "all" | "active" | "completed"
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
     if (!authUser) navigate("/");
@@ -181,13 +356,16 @@ const Projects = () => {
   /* Derived counts */
   const completedProjects = allProjects.filter((p) => isCompleted(p.status));
   const activeProjects = allProjects.filter((p) => !isCompleted(p.status));
+  const stalledProjects = allProjects.filter((p) => getProgress(p)?.isStalled);
 
   const displayedProjects =
     activeTab === "completed"
       ? completedProjects
       : activeTab === "active"
         ? activeProjects
-        : allProjects;
+        : activeTab === "stalled"
+          ? stalledProjects
+          : allProjects;
 
   /* Handlers */
   const handleDeleteSingle = (id) => {
@@ -261,7 +439,7 @@ const Projects = () => {
 
       {/* ── Stat Cards (admin only) ── */}
       {isAdmin && (
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
             <p className="text-xs text-gray-500 mb-1">Total</p>
             <p className="text-2xl font-bold text-gray-800">{totalProjects}</p>
@@ -278,16 +456,32 @@ const Projects = () => {
               {completedProjects.length}
             </p>
           </div>
+          <div className="bg-white rounded-xl border border-orange-200 p-4 shadow-sm">
+            <p className="text-xs text-orange-600 mb-1 flex items-center gap-1">
+              <Flame size={11} /> Stalled
+            </p>
+            <p className="text-2xl font-bold text-orange-600">
+              {stalledProjects.length}
+            </p>
+          </div>
         </div>
       )}
 
       {/* ── Filter Tabs ── */}
       {allProjects.length > 0 && (
-        <div className="flex gap-2 mb-4 bg-gray-100 p-1 rounded-lg w-fit">
+        <div className="flex flex-wrap gap-2 mb-4 bg-gray-100 p-1 rounded-lg w-fit">
           {[
             { key: "all", label: `All (${allProjects.length})` },
             { key: "active", label: `Active (${activeProjects.length})` },
             { key: "completed", label: `Done (${completedProjects.length})` },
+            ...(stalledProjects.length > 0
+              ? [
+                  {
+                    key: "stalled",
+                    label: `🔥 Stalled (${stalledProjects.length})`,
+                  },
+                ]
+              : []),
           ].map(({ key, label }) => (
             <button
               key={key}
@@ -295,7 +489,9 @@ const Projects = () => {
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition
                 ${
                   activeTab === key
-                    ? "bg-white text-gray-900 shadow-sm"
+                    ? key === "stalled"
+                      ? "bg-orange-500 text-white shadow-sm"
+                      : "bg-white text-gray-900 shadow-sm"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
             >
@@ -325,7 +521,6 @@ const Projects = () => {
               />
             ))}
 
-            {/* Mobile Pagination */}
             {totalPages > 1 && (
               <div className="flex flex-col items-center gap-2 pt-2">
                 <p className="text-sm text-gray-500">
@@ -359,6 +554,7 @@ const Projects = () => {
                   <th className="p-4">Client</th>
                   <th className="p-4">Type / kW</th>
                   <th className="p-4">Status</th>
+                  <th className="p-4 min-w-40">Progress</th>
                   <th className="p-4">Last Updated</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
@@ -366,18 +562,37 @@ const Projects = () => {
               <tbody className="divide-y divide-gray-100">
                 {displayedProjects.map((project) => {
                   const done = isCompleted(project.status);
+                  const prog = getProgress(project);
                   return (
                     <tr
                       key={project._id}
-                      className={`hover:bg-gray-50 transition ${done ? "bg-emerald-50/30" : ""}`}
+                      className={`hover:bg-gray-50 transition ${
+                        done
+                          ? "bg-emerald-50/30"
+                          : prog?.isStalled
+                            ? "bg-orange-50/20"
+                            : ""
+                      }`}
                     >
                       <td className="p-4">
-                        <p className="font-medium text-gray-900">
-                          {project.clientName}
-                        </p>
-                        <p className="text-xs text-gray-400 font-mono mt-0.5">
-                          {project.clientContact}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          {prog?.isStalled && (
+                            <span title={`Stalled for ${prog.stallDays} days`}>
+                              <Flame
+                                size={13}
+                                className="text-orange-500 shrink-0"
+                              />
+                            </span>
+                          )}
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {project.clientName}
+                            </p>
+                            <p className="text-xs text-gray-400 font-mono mt-0.5">
+                              {project.clientContact}
+                            </p>
+                          </div>
+                        </div>
                       </td>
                       <td className="p-4 text-sm text-gray-600">
                         <span>{project.type}</span>
@@ -406,6 +621,9 @@ const Projects = () => {
                             {project.status || "Pending"}
                           </span>
                         </div>
+                      </td>
+                      <td className="p-4">
+                        <ProgressBar project={project} compact />
                       </td>
                       <td className="p-4 text-xs text-gray-500">
                         {project.updatedAt
@@ -485,15 +703,12 @@ const Projects = () => {
 
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
-              {/* Backdrop */}
               <div
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                 onClick={() => setFullProjectView(false)}
               />
 
-              {/* Modal */}
               <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white shadow-2xl mx-3">
-                {/* Colored top bar */}
                 <div
                   className={`h-1.5 rounded-t-2xl ${done ? "bg-emerald-400" : "bg-blue-500"}`}
                 />
@@ -538,6 +753,14 @@ const Projects = () => {
                     </div>
                   </div>
 
+                  {/* ── Progress Bar (modal) ── */}
+                  <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
+                      Overall Progress
+                    </p>
+                    <ProgressBar project={selectedProject} />
+                  </div>
+
                   {/* Address */}
                   {(selectedProject.full_address || selectedProject.city) && (
                     <div className="bg-gray-50 rounded-xl p-4 mb-4">
@@ -576,8 +799,11 @@ const Projects = () => {
 
                   {/* Current Status + Action */}
                   <div
-                    className="rounded-xl border p-4 mb-4 flex items-start justify-between gap-4
-                  ${done ? 'border-emerald-200 bg-emerald-50/50' : 'border-blue-100 bg-blue-50/30'}"
+                    className={`rounded-xl border p-4 mb-4 flex items-start justify-between gap-4 ${
+                      done
+                        ? "border-emerald-200 bg-emerald-50/50"
+                        : "border-blue-100 bg-blue-50/30"
+                    }`}
                   >
                     <div>
                       <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
@@ -643,9 +869,7 @@ const Projects = () => {
 
                     {selectedProject.statusHistory?.length ? (
                       <div className="relative">
-                        {/* Vertical timeline line */}
                         <div className="absolute left-3.5 top-0 bottom-0 w-px bg-gray-200" />
-
                         <ul className="space-y-3 pl-9 relative">
                           {[...selectedProject.statusHistory]
                             .reverse()
@@ -653,7 +877,6 @@ const Projects = () => {
                               const isFirst = i === 0;
                               return (
                                 <li key={i} className="relative">
-                                  {/* Dot */}
                                   <div
                                     className={`absolute -left-5.5 top-1 w-3 h-3 rounded-full border-2 ${
                                       isFirst
@@ -661,7 +884,6 @@ const Projects = () => {
                                         : "bg-white border-gray-300"
                                     }`}
                                   />
-
                                   <div
                                     className={`rounded-lg border px-4 py-3 text-sm ${
                                       isFirst
