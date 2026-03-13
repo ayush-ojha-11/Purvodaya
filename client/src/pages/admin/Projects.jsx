@@ -20,6 +20,10 @@ import { PROJECT_WORKFLOW } from "../../config/projectStatus";
 import useAuthStore from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
+/* ─── Readable label helper ───────────────────────────────────────────── */
+const toLabel = (str) =>
+  str ? str.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "—";
+
 /* ─── Status helpers ──────────────────────────────────────────────────── */
 const COMPLETED_STATUSES = ["wifi-configured", "completed"];
 
@@ -36,30 +40,22 @@ const getStatusBadge = (status) => {
 };
 
 /* ─── Progress helpers ────────────────────────────────────────────────── */
-/**
- * Returns { percent, colorClass, bgClass, label, isStalled, stallDays }
- * colorClass  → Tailwind text color for the percentage number
- * barColor    → inline style hex for the progress fill (gradient-friendly)
- */
 const getProgress = (project) => {
   const flow = PROJECT_WORKFLOW[project.type] ?? [];
   if (flow.length === 0) return null;
 
   const currentIndex = flow.indexOf(project.status);
-  // If status not found treat as 0; if last step treat as 100
   const steps = flow.length - 1 || 1;
   const rawPercent =
     currentIndex === -1 ? 0 : Math.round((currentIndex / steps) * 100);
   const percent = Math.min(rawPercent, 100);
 
-  // Determine stall: last update > 7 days ago and not completed
   const lastUpdate = project.updatedAt || project.createdAt;
   const daysSinceUpdate = lastUpdate
     ? Math.floor((Date.now() - new Date(lastUpdate)) / 86_400_000)
     : 0;
   const isStalled = !isCompleted(project.status) && daysSinceUpdate >= 7;
 
-  // Color scheme
   let barFrom, barTo, textColor, bgTrack;
   if (isCompleted(project.status)) {
     barFrom = "#10b981";
@@ -112,16 +108,14 @@ const getProgress = (project) => {
   };
 };
 
-/* ─── Progress Bar Component ──────────────────────────────────────────── */
+/* ─── Progress Bar ────────────────────────────────────────────────────── */
 const ProgressBar = ({ project, compact = false }) => {
   const prog = getProgress(project);
   if (!prog) return null;
-
   const { percent, barFrom, barTo, textColor, bgTrack, label, isStalled } =
     prog;
 
   if (compact) {
-    // Slim bar for table rows
     return (
       <div className="flex items-center gap-2 min-w-30">
         <div
@@ -152,7 +146,6 @@ const ProgressBar = ({ project, compact = false }) => {
     );
   }
 
-  // Full bar for cards / modal
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-1.5">
@@ -189,21 +182,22 @@ const ProgressBar = ({ project, compact = false }) => {
   );
 };
 
-/* ─── Status Pipeline (visual timeline in modal) ──────────────────────── */
+/* ─── Status Pipeline ─────────────────────────────────────────────────── */
 const StatusPipeline = ({ flow, currentStatus }) => {
   const currentIndex = flow.indexOf(currentStatus);
 
   return (
-    <div className="mt-2">
-      <div className="flex items-start gap-0 overflow-x-auto pb-2">
+    <div className="mt-2 overflow-x-auto pb-2">
+      <div className="flex items-start" style={{ minWidth: "max-content" }}>
         {flow.map((step, i) => {
           const isPast = i < currentIndex;
           const isCurrent = i === currentIndex;
           const isFuture = i > currentIndex;
 
           return (
-            <div key={step} className="flex items-center shrink-0">
-              <div className="flex flex-col items-center">
+            <div key={step} className="flex items-center">
+              {/* Node + label */}
+              <div className="flex flex-col items-center w-20">
                 <div
                   className={`
                     w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all
@@ -215,18 +209,20 @@ const StatusPipeline = ({ flow, currentStatus }) => {
                   {isPast ? <CheckCircle2 size={14} /> : <span>{i + 1}</span>}
                 </div>
                 <p
-                  className={`mt-1 text-center max-w-18 leading-tight text-[10px] font-medium capitalize
+                  className={`mt-1.5 text-center w-full leading-tight text-[10px] font-medium px-1
                     ${isCurrent ? "text-blue-700 font-semibold" : ""}
                     ${isPast ? "text-emerald-600" : ""}
                     ${isFuture ? "text-gray-400" : ""}
                   `}
                 >
-                  {step}
+                  {toLabel(step)}
                 </p>
               </div>
+
+              {/* Connector */}
               {i < flow.length - 1 && (
                 <div
-                  className={`h-0.5 w-8 -mt-4 mx-1 rounded ${
+                  className={`h-0.5 w-6 mb-6 rounded shrink-0 ${
                     i < currentIndex ? "bg-emerald-400" : "bg-gray-200"
                   }`}
                 />
@@ -253,7 +249,6 @@ const ProjectMobile = ({ project, onDelete, onViewFull, isAdmin }) => {
       `}
       onClick={onViewFull}
     >
-      {/* Left stripe: green = done, orange = stalled, blue = active */}
       <div
         className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${
           done
@@ -277,17 +272,19 @@ const ProjectMobile = ({ project, onDelete, onViewFull, isAdmin }) => {
           <span
             className={`px-2 py-0.5 text-[11px] rounded-full border ${getStatusBadge(project.status)}`}
           >
-            {project.status || "Pending"}
+            {toLabel(project.status) || "Pending"}
           </span>
         </div>
       </div>
 
-      <p className="font-mono text-xs text-gray-500 pl-1 mb-3">
+      <p className="font-mono text-xs text-gray-500 pl-1">
         📞 {project.clientContact}
       </p>
+      {project.city && (
+        <p className="text-xs text-gray-400 pl-1 mt-0.5">📍 {project.city}</p>
+      )}
 
-      {/* Progress bar */}
-      <div className="pl-1 mb-3">
+      <div className="pl-1 my-3">
         <ProgressBar project={project} />
       </div>
 
@@ -341,11 +338,9 @@ const Projects = () => {
   useEffect(() => {
     if (!authUser) navigate("/");
   }, [authUser, navigate]);
-
   useEffect(() => {
     fetchAllProjects();
   }, [fetchAllProjects]);
-
   useEffect(() => {
     document.body.style.overflow = fullProjectView ? "hidden" : "";
     return () => {
@@ -353,7 +348,6 @@ const Projects = () => {
     };
   }, [fullProjectView]);
 
-  /* Derived counts */
   const completedProjects = allProjects.filter((p) => isCompleted(p.status));
   const activeProjects = allProjects.filter((p) => !isCompleted(p.status));
   const stalledProjects = allProjects.filter((p) => getProgress(p)?.isStalled);
@@ -367,7 +361,6 @@ const Projects = () => {
           ? stalledProjects
           : allProjects;
 
-  /* Handlers */
   const handleDeleteSingle = (id) => {
     setConfirmState({
       open: true,
@@ -399,11 +392,6 @@ const Projects = () => {
     downloadProjectPDF(project);
   };
 
-  const openFullProjectView = (project) => {
-    setSelectedProject(project);
-    setFullProjectView(true);
-  };
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -414,7 +402,7 @@ const Projects = () => {
 
   return (
     <div className="max-w-6xl mx-auto min-h-screen pb-16 p-4">
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="flex flex-row justify-between items-start mb-6 gap-4 p-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-primary">
@@ -424,12 +412,11 @@ const Projects = () => {
             {isAdmin ? "Manage and track all projects" : "Track all projects"}
           </p>
         </div>
-
         {allProjects.length > 0 && isAdmin && (
           <button
             onClick={handleDeleteAll}
             disabled={isDeletingAll}
-            className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm hover:bg-red-100 transition"
+            className="hidden items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm hover:bg-red-100 transition"
           >
             <Trash2 size={14} />
             {isDeletingAll ? "Deleting..." : "Delete All"}
@@ -437,7 +424,7 @@ const Projects = () => {
         )}
       </div>
 
-      {/* ── Stat Cards (admin only) ── */}
+      {/* Stat Cards */}
       {isAdmin && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
@@ -467,7 +454,7 @@ const Projects = () => {
         </div>
       )}
 
-      {/* ── Filter Tabs ── */}
+      {/* Filter Tabs */}
       {allProjects.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4 bg-gray-100 p-1 rounded-lg w-fit">
           {[
@@ -501,7 +488,7 @@ const Projects = () => {
         </div>
       )}
 
-      {/* ── Empty State ── */}
+      {/* Empty */}
       {displayedProjects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <AlertTriangle size={48} className="mb-4 text-gray-300" />
@@ -517,10 +504,12 @@ const Projects = () => {
                 project={project}
                 isAdmin={isAdmin}
                 onDelete={handleDeleteSingle}
-                onViewFull={() => openFullProjectView(project)}
+                onViewFull={() => {
+                  setSelectedProject(project);
+                  setFullProjectView(true);
+                }}
               />
             ))}
-
             {totalPages > 1 && (
               <div className="flex flex-col items-center gap-2 pt-2">
                 <p className="text-sm text-gray-500">
@@ -552,6 +541,7 @@ const Projects = () => {
               <thead className="bg-gray-50 border-b text-xs uppercase text-gray-500 tracking-wider">
                 <tr>
                   <th className="p-4">Client</th>
+                  <th className="p-4">City</th>
                   <th className="p-4">Type / kW</th>
                   <th className="p-4">Status</th>
                   <th className="p-4 min-w-40">Progress</th>
@@ -577,12 +567,11 @@ const Projects = () => {
                       <td className="p-4">
                         <div className="flex items-center gap-2">
                           {prog?.isStalled && (
-                            <span title={`Stalled for ${prog.stallDays} days`}>
-                              <Flame
-                                size={13}
-                                className="text-orange-500 shrink-0"
-                              />
-                            </span>
+                            <Flame
+                              size={13}
+                              className="text-orange-500 shrink-0"
+                              title={`Stalled for ${prog.stallDays} days`}
+                            />
                           )}
                           <div>
                             <p className="font-medium text-gray-900">
@@ -593,6 +582,9 @@ const Projects = () => {
                             </p>
                           </div>
                         </div>
+                      </td>
+                      <td className="p-4 text-sm text-gray-600">
+                        {project.city || "—"}
                       </td>
                       <td className="p-4 text-sm text-gray-600">
                         <span>{project.type}</span>
@@ -618,7 +610,7 @@ const Projects = () => {
                           <span
                             className={`px-2.5 py-0.5 text-xs rounded-full border ${getStatusBadge(project.status)}`}
                           >
-                            {project.status || "Pending"}
+                            {toLabel(project.status) || "Pending"}
                           </span>
                         </div>
                       </td>
@@ -633,7 +625,10 @@ const Projects = () => {
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-3">
                           <button
-                            onClick={() => openFullProjectView(project)}
+                            onClick={() => {
+                              setSelectedProject(project);
+                              setFullProjectView(true);
+                            }}
                             className="p-1.5 rounded-lg hover:bg-indigo-50 transition"
                             title="View Details"
                           >
@@ -655,8 +650,6 @@ const Projects = () => {
                 })}
               </tbody>
             </table>
-
-            {/* Desktop Pagination */}
             <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
               <span className="text-sm text-gray-500">
                 Page {page} of {totalPages}
@@ -682,7 +675,6 @@ const Projects = () => {
         </>
       )}
 
-      {/* ── Confirm Dialog ── */}
       <ConfirmDialog
         open={confirmState.open}
         title={confirmState.title}
@@ -692,7 +684,7 @@ const Projects = () => {
         onConfirm={confirmState.onConfirm}
       />
 
-      {/* ── Full Project Modal ── */}
+      {/* Modal */}
       {fullProjectView &&
         selectedProject &&
         (() => {
@@ -729,13 +721,13 @@ const Projects = () => {
                     </div>
                     <button
                       onClick={() => setFullProjectView(false)}
-                      className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-700 transition"
+                      className="p-1 hover:bg-gray-100 rounded-lg transition"
                     >
                       <X size={18} className="text-red-400" />
                     </button>
                   </div>
 
-                  {/* Client Info Card */}
+                  {/* Client Info */}
                   <div className="bg-gray-50 rounded-xl p-4 mb-4 flex justify-between">
                     <div>
                       <p className="font-semibold text-gray-900 text-base">
@@ -744,6 +736,11 @@ const Projects = () => {
                       <p className="font-mono text-sm text-gray-500 mt-0.5">
                         📞 {selectedProject.clientContact}
                       </p>
+                      {selectedProject.city && (
+                        <p className="text-sm text-gray-400 mt-0.5">
+                          📍 {selectedProject.city}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right text-sm text-gray-600">
                       <p className="font-medium">{selectedProject.type}</p>
@@ -753,7 +750,7 @@ const Projects = () => {
                     </div>
                   </div>
 
-                  {/* ── Progress Bar (modal) ── */}
+                  {/* Progress */}
                   <div className="bg-gray-50 rounded-xl p-4 mb-4">
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
                       Overall Progress
@@ -780,7 +777,7 @@ const Projects = () => {
                     </div>
                   )}
 
-                  {/* ── Status Pipeline ── */}
+                  {/* Pipeline */}
                   <div className="mb-4">
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
                       Project Pipeline
@@ -799,74 +796,63 @@ const Projects = () => {
 
                   {/* Current Status + Action */}
                   <div
-                    className={`rounded-xl border p-4 mb-4 flex items-start justify-between gap-4 ${
-                      done
-                        ? "border-emerald-200 bg-emerald-50/50"
-                        : "border-blue-100 bg-blue-50/30"
-                    }`}
+                    className={`rounded-xl border p-4 mb-4 ${done ? "border-emerald-200 bg-emerald-50/50" : "border-blue-100 bg-blue-50/30"}`}
                   >
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                        Current Status
-                      </p>
-                      <span
-                        className={`inline-block rounded-full px-3 py-1 text-sm font-medium border ${getStatusBadge(selectedProject.status)}`}
-                      >
-                        {selectedProject.status || "Pending"}
-                      </span>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
+                      Current Status
+                    </p>
+                    <span
+                      className={`inline-block rounded-full px-3 py-1 text-sm font-medium border ${getStatusBadge(selectedProject.status)}`}
+                    >
+                      {toLabel(selectedProject.status) || "Pending"}
+                    </span>
 
-                      {isAdmin && (
-                        <div className="mt-4">
-                          {nextStatus ? (
-                            <button
-                              onClick={() => {
-                                setConfirmState({
-                                  open: true,
-                                  title: "Advance Project Status",
-                                  green: true,
-                                  message: `Change status to "${nextStatus}"?`,
-                                  onConfirm: async () => {
-                                    await updateProjectStatus(
-                                      selectedProject._id,
-                                      nextStatus,
-                                    );
-                                    setConfirmState({ open: false });
-                                    setFullProjectView(false);
-                                  },
-                                });
-                              }}
-                              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition cursor-pointer"
-                            >
-                              Advance to "{nextStatus}"
-                              <Arrow size={14} />
-                            </button>
-                          ) : (
-                            <div className="space-y-2">
-                              <p className="text-sm font-semibold text-emerald-700 flex items-center gap-1.5">
-                                <CheckCircle2 size={16} /> Project Completed 🎉
-                              </p>
-                              <button
-                                onClick={() =>
-                                  handleDownloadPDF(selectedProject)
-                                }
-                                className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer"
-                              >
-                                <Download size={14} />
-                                Download PDF Report
-                              </button>
-                            </div>
-                          )}
+                    <div className="mt-4">
+                      {nextStatus ? (
+                        <button
+                          onClick={() => {
+                            if (navigator?.vibrate) navigator.vibrate(20);
+                            setConfirmState({
+                              open: true,
+                              title: "Advance Project Status",
+                              green: true,
+                              message: `Change status to "${toLabel(nextStatus)}"?`,
+                              onConfirm: async () => {
+                                await updateProjectStatus(
+                                  selectedProject._id,
+                                  nextStatus,
+                                );
+                                setConfirmState({ open: false });
+                                setFullProjectView(false);
+                              },
+                            });
+                          }}
+                          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition cursor-pointer"
+                        >
+                          Advance to "{toLabel(nextStatus)}"
+                          <Arrow size={14} />
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold text-emerald-700 flex items-center gap-1.5">
+                            <CheckCircle2 size={16} /> Project Completed 🎉
+                          </p>
+                          <button
+                            onClick={() => handleDownloadPDF(selectedProject)}
+                            className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition cursor-pointer"
+                          >
+                            <Download size={14} /> Download PDF Report
+                          </button>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* ── Status History ── */}
+                  {/* Status History */}
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
                       Status History
                     </p>
-
                     {selectedProject.statusHistory?.length ? (
                       <div className="relative">
                         <div className="absolute left-3.5 top-0 bottom-0 w-px bg-gray-200" />
@@ -893,13 +879,9 @@ const Projects = () => {
                                   >
                                     <div className="flex justify-between gap-4">
                                       <span
-                                        className={`font-semibold capitalize ${
-                                          isFirst
-                                            ? "text-blue-700"
-                                            : "text-gray-700"
-                                        }`}
+                                        className={`font-semibold capitalize ${isFirst ? "text-blue-700" : "text-gray-700"}`}
                                       >
-                                        {h.status}
+                                        {toLabel(h.status)}
                                         {isFirst && (
                                           <span className="ml-2 text-[10px] font-medium bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">
                                             Latest

@@ -82,14 +82,14 @@ const AdminDashboard = () => {
   const statItems2 = [
     {
       id: "lead",
-      title: "Pending Leads",
+      title: "Leads",
       value: dashboardStats?.totalPendingLeads,
       icon: <UserPlus />,
       color: "#F59E0B",
     },
     {
       id: "project",
-      title: "Total Projects",
+      title: "Projects",
       value: dashboardStats?.totalProjects,
       icon: <FaClipboardList />,
       color: "#EF4444",

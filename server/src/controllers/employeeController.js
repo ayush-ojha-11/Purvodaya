@@ -37,6 +37,7 @@ export const getEmployeeDashboardStats = async (req, res) => {
     };
 
     const totalProjects = await Project.countDocuments();
+    const totalLeads = await Lead.countDocuments({ status: "pending" });
     const totalEmployeeLeads = await Lead.countDocuments({ employeeId });
 
     return res.status(200).json({
@@ -44,6 +45,7 @@ export const getEmployeeDashboardStats = async (req, res) => {
       absentDays,
       totalProjects,
       totalEmployeeLeads,
+      totalLeads,
       inventoryRequestStats: requestStats,
     });
   } catch (error) {

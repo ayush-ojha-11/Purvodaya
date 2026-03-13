@@ -5,7 +5,7 @@ export const protect = async (req, res, next) => {
   const token = req.cookies?.jwt;
 
   if (!token) {
-    return res.status(401).json({ message: "Not authorized!" });
+    return res.status(401).json({ message: "Not authorized!", expired: true });
   }
   // if token is received, proceed
   try {
@@ -15,7 +15,9 @@ export const protect = async (req, res, next) => {
     next();
   } catch (error) {
     console.log("Error in auth middleware");
-    return res.status(401).json({ message: "Authorization failed!" });
+    return res
+      .status(401)
+      .json({ message: "Authorization failed!", expired: true });
   }
 };
 

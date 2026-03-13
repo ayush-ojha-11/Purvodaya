@@ -52,7 +52,7 @@ export const deleteAllProjects = async (req, res) => {
   } catch (error) {
     console.log(
       "Error in projectController (deleteAllProjects)",
-      error.message
+      error.message,
     );
     res.status(500).json({ message: "Internal server error!" });
   }
@@ -102,12 +102,13 @@ export const updateProjectStatus = async (req, res) => {
       status,
       changedBy: req.user._id,
     });
+    project.updatedAt = new Date();
     await project.save();
 
     // refetch populated project
     const populatedProject = await Project.findById(project._id).populate(
       "statusHistory.changedBy",
-      "name"
+      "name",
     );
 
     res.status(200).json({
@@ -117,7 +118,7 @@ export const updateProjectStatus = async (req, res) => {
   } catch (error) {
     console.log(
       "Error in projectController (updateProjectStatus)",
-      error.message
+      error.message,
     );
     res.status(500).json({ message: "Internal server error!" });
   }

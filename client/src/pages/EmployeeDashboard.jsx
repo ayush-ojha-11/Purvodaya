@@ -5,6 +5,7 @@ import useEmployeeStore from "../store/useEmployeeStore";
 
 import {
   FaUserCheck,
+  FaUsers,
   FaUserTimes,
   FaPercent,
   FaClipboardList,
@@ -45,6 +46,7 @@ const EmployeeDashboard = () => {
     const routes = {
       projects: "/employee/projects",
       leads: "/employee/leads",
+      allLeads: "/employee/allLeads",
     };
 
     navigate(routes[id]);
@@ -72,10 +74,17 @@ const EmployeeDashboard = () => {
   const statItems = [
     {
       id: "projects",
-      title: "Total Projects",
+      title: "Projects",
       value: stats?.totalProjects,
       icon: <FaClipboardList />,
       color: "#3B82F6",
+    },
+    {
+      id: "allLeads",
+      title: "Leads",
+      value: stats?.totalLeads,
+      icon: <FaUsers />,
+      color: "#10B981",
     },
     {
       id: "leads",

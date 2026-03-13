@@ -79,7 +79,7 @@ export const confirmLead = async (req, res) => {
     lead.status = "confirmed";
     await lead.save();
 
-    const initialStatus = "lead-confirmed";
+    const initialStatus = "application-submitted";
     // create project
     const project = new Project({
       leadId: lead._id,

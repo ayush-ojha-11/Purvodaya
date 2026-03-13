@@ -145,7 +145,7 @@ const Login = () => {
         </p>
       </div>
       {showForgotDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm bg-base-100 rounded-xl p-6 space-y-4">
             <h3 className="text-lg font-semibold">Reset Password</h3>
             <p className="text-sm text-base-content/70">

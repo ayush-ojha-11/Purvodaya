@@ -87,6 +87,10 @@ const appRouter = createBrowserRouter([
             path: "projects",
             element: <Projects />,
           },
+          {
+            path: "allLeads",
+            element: <Leads />,
+          },
         ],
       },
     ],

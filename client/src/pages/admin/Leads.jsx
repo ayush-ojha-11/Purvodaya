@@ -15,8 +15,76 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../lib/helper";
 
+/* ─── Numbered Pagination ─────────────────────────────────────────────── */
+const Pagination = ({ page, totalPages, onPageChange }) => {
+  if (totalPages <= 1) return null;
+
+  const getPages = () => {
+    const pages = [];
+    const delta = 2;
+    const left = Math.max(1, page - delta);
+    const right = Math.min(totalPages, page + delta);
+
+    if (left > 1) {
+      pages.push(1);
+      if (left > 2) pages.push("...");
+    }
+    for (let i = left; i <= right; i++) pages.push(i);
+    if (right < totalPages) {
+      if (right < totalPages - 1) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        className="btn"
+        disabled={page === 1}
+        onClick={() => onPageChange(page - 1)}
+      >
+        <ChevronLeft size={16} />
+      </button>
+      {getPages().map((p, i) =>
+        p === "..." ? (
+          <span key={`ellipsis-${i}`} className="px-2 text-gray-400 text-sm">
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onPageChange(p)}
+            className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+              p === page
+                ? "bg-amber-400 text-white shadow-sm"
+                : "hover:bg-gray-100 text-gray-600"
+            }`}
+          >
+            {p}
+          </button>
+        ),
+      )}
+      <button
+        className="btn"
+        disabled={page === totalPages}
+        onClick={() => onPageChange(page + 1)}
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  );
+};
+
 /* ─── Mobile Card ─────────────────────────────────────────────────────── */
-const LeadCard = ({ lead, onApprove, onReject, onDelete, onViewFull }) => (
+const LeadCard = ({
+  lead,
+  onApprove,
+  onReject,
+  onDelete,
+  onViewFull,
+  isAdmin,
+}) => (
   <div
     className="relative bg-white rounded-xl p-4 shadow-sm border border-amber-200 cursor-pointer transition hover:shadow-md active:scale-[0.99]"
     onClick={onViewFull}
@@ -43,33 +111,37 @@ const LeadCard = ({ lead, onApprove, onReject, onDelete, onViewFull }) => (
             : formatDate(lead.createdAt)}
         </p>
         <div className="flex gap-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onApprove();
-            }}
-            className="p-1.5 rounded-lg hover:bg-emerald-50 transition"
-          >
-            <CheckCircle size={17} className="text-emerald-600" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onReject();
-            }}
-            className="p-1.5 rounded-lg hover:bg-orange-50 transition"
-          >
-            <XCircle size={17} className="text-orange-500" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(lead._id);
-            }}
-            className="p-1.5 rounded-lg hover:bg-red-50 transition"
-          >
-            <Trash2 size={17} className="text-red-400" />
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onApprove();
+                }}
+                className="p-1.5 rounded-lg hover:bg-emerald-50 transition"
+              >
+                <CheckCircle size={17} className="text-emerald-600" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReject();
+                }}
+                className="p-1.5 rounded-lg hover:bg-orange-50 transition"
+              >
+                <XCircle size={17} className="text-orange-500" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(lead._id);
+                }}
+                className="p-1.5 rounded-lg hover:bg-red-50 transition"
+              >
+                <Trash2 size={17} className="text-red-400" />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -93,6 +165,9 @@ const Leads = () => {
   const authUser = useAuthStore((state) => state.authUser);
   const navigate = useNavigate();
 
+  // Adjust this check to match how your app stores the admin role
+  const isAdmin = authUser?.role === "admin";
+
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [confirmState, setConfirmState] = useState({
     open: false,
@@ -113,6 +188,9 @@ const Leads = () => {
   useEffect(() => {
     fetchAllLeads();
   }, [fetchAllLeads]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   const pendingLeads = allLeads.filter(
     (l) => !l.status || l.status.toLowerCase() === "pending",
@@ -172,18 +250,20 @@ const Leads = () => {
       <div className="flex flex-row justify-between items-start mb-6 gap-4 p-2">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-primary">
-            Lead Management
+            {isAdmin ? "Lead Management" : "Leads"}
           </h2>
           <p className="text-sm text-gray-500">
-            Manage and track incoming leads
+            {isAdmin
+              ? "Manage and track incoming leads"
+              : "See all listed leads"}
           </p>
-          <p className="font-mono mt-1 text-sm">Pending: {totalPendingLeads}</p>
+          <p className="font-mono mt-1 text-sm">Total: {totalPendingLeads}</p>
         </div>
-        {pendingLeads.length > 0 && (
+        {isAdmin && pendingLeads.length > 0 && (
           <button
             onClick={handleDeleteAll}
             disabled={isDeletingAll}
-            className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm hover:bg-red-100 transition"
+            className="hidden items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm hover:bg-red-100 transition"
           >
             <Trash2 size={14} />
             {isDeletingAll ? "Deleting..." : "Delete All"}
@@ -205,6 +285,7 @@ const Leads = () => {
               <LeadCard
                 key={lead._id}
                 lead={lead}
+                isAdmin={isAdmin}
                 onApprove={() => handleLeadStatus(lead, "confirmed")}
                 onReject={() => handleLeadStatus(lead, "rejected")}
                 onDelete={handleDeleteSingle}
@@ -219,22 +300,11 @@ const Leads = () => {
                 <p className="text-sm text-gray-500">
                   Page {page} of {totalPages}
                 </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => fetchAllLeads(true, page - 1)}
-                    className="btn"
-                    disabled={page === 1}
-                  >
-                    <ChevronLeft size={16} /> Prev
-                  </button>
-                  <button
-                    onClick={() => fetchAllLeads(true, page + 1)}
-                    className="btn"
-                    disabled={page === totalPages}
-                  >
-                    Next <ChevronRight size={16} />
-                  </button>
-                </div>
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={(p) => fetchAllLeads(true, p)}
+                />
               </div>
             )}
           </div>
@@ -287,24 +357,33 @@ const Leads = () => {
                         >
                           <EyeIcon size={16} className="text-indigo-500" />
                         </button>
-                        <button
-                          onClick={() => handleLeadStatus(lead, "confirmed")}
-                          className="p-1.5 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
-                        >
-                          <CheckCircle size={16} className="text-emerald-600" />
-                        </button>
-                        <button
-                          onClick={() => handleLeadStatus(lead, "rejected")}
-                          className="p-1.5 rounded-lg hover:bg-orange-50 transition cursor-pointer"
-                        >
-                          <XCircle size={16} className="text-orange-500" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSingle(lead._id)}
-                          className="p-1.5 rounded-lg hover:bg-red-50 transition"
-                        >
-                          <Trash2 size={16} className="text-red-400" />
-                        </button>
+                        {isAdmin && (
+                          <>
+                            <button
+                              onClick={() =>
+                                handleLeadStatus(lead, "confirmed")
+                              }
+                              className="p-1.5 rounded-lg hover:bg-emerald-50 transition cursor-pointer"
+                            >
+                              <CheckCircle
+                                size={16}
+                                className="text-emerald-600"
+                              />
+                            </button>
+                            <button
+                              onClick={() => handleLeadStatus(lead, "rejected")}
+                              className="p-1.5 rounded-lg hover:bg-orange-50 transition cursor-pointer"
+                            >
+                              <XCircle size={16} className="text-orange-500" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteSingle(lead._id)}
+                              className="p-1.5 rounded-lg hover:bg-red-50 transition"
+                            >
+                              <Trash2 size={16} className="text-red-400" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -315,22 +394,11 @@ const Leads = () => {
               <span className="text-sm text-gray-500">
                 Page {page} of {totalPages}
               </span>
-              <div className="flex gap-2">
-                <button
-                  className="btn"
-                  disabled={page === 1}
-                  onClick={() => fetchAllLeads(true, page - 1)}
-                >
-                  <ChevronLeft size={16} /> Prev
-                </button>
-                <button
-                  className="btn"
-                  disabled={page === totalPages}
-                  onClick={() => fetchAllLeads(true, page + 1)}
-                >
-                  Next <ChevronRight size={16} />
-                </button>
-              </div>
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={(p) => fetchAllLeads(true, p)}
+              />
             </div>
           </div>
         </>
@@ -373,27 +441,29 @@ const Leads = () => {
                 </button>
               </div>
 
-              {/* Quick Actions */}
-              <div className="flex gap-2 mb-5">
-                <button
-                  onClick={() => {
-                    setFullLeadView(false);
-                    handleLeadStatus(selectedLead, "confirmed");
-                  }}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition cursor-pointer"
-                >
-                  <CheckCircle size={15} /> Confirm Lead
-                </button>
-                <button
-                  onClick={() => {
-                    setFullLeadView(false);
-                    handleLeadStatus(selectedLead, "rejected");
-                  }}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition cursor-pointer"
-                >
-                  <XCircle size={15} /> Reject Lead
-                </button>
-              </div>
+              {/* Quick Actions — admin only */}
+              {isAdmin && (
+                <div className="flex gap-2 mb-5">
+                  <button
+                    onClick={() => {
+                      setFullLeadView(false);
+                      handleLeadStatus(selectedLead, "confirmed");
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition cursor-pointer"
+                  >
+                    <CheckCircle size={15} /> Confirm Lead
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFullLeadView(false);
+                      handleLeadStatus(selectedLead, "rejected");
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 transition cursor-pointer"
+                  >
+                    <XCircle size={15} /> Reject Lead
+                  </button>
+                </div>
+              )}
 
               {/* Client Info */}
               <div className="bg-gray-50 rounded-xl p-4 mb-4">

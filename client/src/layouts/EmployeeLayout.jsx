@@ -6,6 +6,7 @@ import {
   ClipboardList,
   LogOut,
   UserPlus,
+  Users,
 } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
 import { useEffect, useState } from "react";
@@ -21,6 +22,7 @@ const navItems = [
     path: "/employee/projects",
     icon: <ClipboardList size={18} />,
   },
+  { name: "Leads", path: "/employee/allLeads", icon: <Users size={18} /> },
   { name: "Your Leads", path: "/employee/leads", icon: <UserPlus size={18} /> },
   { name: "Inventory", path: "/employee/inventory", icon: <Box size={18} /> },
 ];
@@ -153,5 +155,4 @@ const EmployeeLayout = () => {
     </div>
   );
 };
-
 export default EmployeeLayout;
