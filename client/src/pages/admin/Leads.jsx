@@ -9,22 +9,53 @@ import {
   AlertTriangle,
   EyeIcon,
   X,
+  CreditCard,
+  Banknote,
+  MapPin,
+  Phone,
+  Zap,
+  User,
+  Mail,
+  Clock,
 } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../../lib/helper";
 
-/* ─── Numbered Pagination ─────────────────────────────────────────────── */
+/* ─── Helpers ─────────────────────────────────────────────────────────── */
+const TYPE_LABELS = {
+  hybrid: "Hybrid",
+  "on-grid": "On Grid",
+  "off-grid": "Off Grid",
+};
+
+const PaymentBadge = ({ type }) => {
+  if (!type) return null;
+  const isLoan = type === "loan";
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border
+      ${
+        isLoan
+          ? "bg-purple-50 text-purple-700 border-purple-200"
+          : "bg-emerald-50 text-emerald-700 border-emerald-200"
+      }`}
+    >
+      {isLoan ? <CreditCard size={10} /> : <Banknote size={10} />}
+      {isLoan ? "Loan" : "Cash"}
+    </span>
+  );
+};
+
+/* ─── Pagination ──────────────────────────────────────────────────────── */
 const Pagination = ({ page, totalPages, onPageChange }) => {
   if (totalPages <= 1) return null;
-
   const getPages = () => {
     const pages = [];
     const delta = 2;
     const left = Math.max(1, page - delta);
     const right = Math.min(totalPages, page + delta);
-
     if (left > 1) {
       pages.push(1);
       if (left > 2) pages.push("...");
@@ -36,7 +67,6 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
     }
     return pages;
   };
-
   return (
     <div className="flex items-center gap-1">
       <button
@@ -48,18 +78,15 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       </button>
       {getPages().map((p, i) =>
         p === "..." ? (
-          <span key={`ellipsis-${i}`} className="px-2 text-gray-400 text-sm">
+          <span key={`e-${i}`} className="px-2 text-gray-400 text-sm">
             …
           </span>
         ) : (
           <button
             key={p}
             onClick={() => onPageChange(p)}
-            className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
-              p === page
-                ? "bg-amber-400 text-white shadow-sm"
-                : "hover:bg-gray-100 text-gray-600"
-            }`}
+            className={`w-8 h-8 rounded-lg text-sm font-medium transition
+              ${p === page ? "bg-amber-400 text-white shadow-sm" : "hover:bg-gray-100 text-gray-600"}`}
           >
             {p}
           </button>
@@ -100,55 +127,71 @@ const LeadCard = ({
       <p className="text-xs font-mono text-gray-500 mb-0.5">
         📞 {lead.clientContact}
       </p>
-      <p className="text-xs text-gray-500 mb-0.5">📍 {lead.city || "—"}</p>
-      <p className="text-xs text-gray-400 mb-3">
-        By: {lead?.employeeId?.name || "NA"}
-      </p>
+      <p className="text-xs text-gray-400 mb-2">📍 {lead.city || "—"}</p>
+
+      {/* Tags */}
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        {lead.type && (
+          <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[11px] font-medium">
+            <Zap size={9} /> {TYPE_LABELS[lead.type] || lead.type}
+          </span>
+        )}
+        {lead.kw && (
+          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-[11px] font-medium">
+            {lead.kw} kW
+          </span>
+        )}
+        <PaymentBadge type={lead.paymentType} />
+      </div>
+
       <div className="flex justify-between items-center">
-        <p className="text-[11px] text-gray-400">
-          {lead.updatedAt
-            ? formatDate(lead.updatedAt)
-            : formatDate(lead.createdAt)}
-        </p>
-        <div className="flex gap-1">
-          {isAdmin && (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onApprove();
-                }}
-                className="p-1.5 rounded-lg hover:bg-emerald-50 transition"
-              >
-                <CheckCircle size={17} className="text-emerald-600" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onReject();
-                }}
-                className="p-1.5 rounded-lg hover:bg-orange-50 transition"
-              >
-                <XCircle size={17} className="text-orange-500" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(lead._id);
-                }}
-                className="p-1.5 rounded-lg hover:bg-red-50 transition"
-              >
-                <Trash2 size={17} className="text-red-400" />
-              </button>
-            </>
-          )}
+        <div>
+          <p className="text-[10px] text-gray-400">
+            By: {lead?.employeeId?.name || "NA"}
+          </p>
+          <p className="text-[10px] text-gray-300">
+            {lead.updatedAt
+              ? formatDate(lead.updatedAt)
+              : formatDate(lead.createdAt)}
+          </p>
         </div>
+        {isAdmin && (
+          <div className="flex gap-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onApprove();
+              }}
+              className="p-1.5 rounded-lg hover:bg-emerald-50 transition"
+            >
+              <CheckCircle size={17} className="text-emerald-600" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onReject();
+              }}
+              className="p-1.5 rounded-lg hover:bg-orange-50 transition"
+            >
+              <XCircle size={17} className="text-orange-500" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(lead._id);
+              }}
+              className="p-1.5 rounded-lg hover:bg-red-50 transition"
+            >
+              <Trash2 size={17} className="text-red-400" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   </div>
 );
 
-/* ─── Main Component ──────────────────────────────────────────────────── */
+/* ─── Main ────────────────────────────────────────────────────────────── */
 const Leads = () => {
   const {
     allLeads,
@@ -163,10 +206,8 @@ const Leads = () => {
   } = useLeadStore();
 
   const authUser = useAuthStore((state) => state.authUser);
-  const navigate = useNavigate();
-
-  // Adjust this check to match how your app stores the admin role
   const isAdmin = authUser?.role === "admin";
+  const navigate = useNavigate();
 
   const [isDeletingAll, setIsDeletingAll] = useState(false);
   const [confirmState, setConfirmState] = useState({
@@ -257,7 +298,7 @@ const Leads = () => {
               ? "Manage and track incoming leads"
               : "See all listed leads"}
           </p>
-          <p className="font-mono mt-1 text-sm">Total: {totalPendingLeads}</p>
+          <p className="font-mono mt-1 text-sm">Pending: {totalPendingLeads}</p>
         </div>
         {isAdmin && pendingLeads.length > 0 && (
           <button
@@ -316,8 +357,10 @@ const Leads = () => {
                 <tr>
                   <th className="p-4">Client</th>
                   <th className="p-4">City</th>
+                  <th className="p-4">Project</th>
+                  <th className="p-4">Payment</th>
                   <th className="p-4">Submitted By</th>
-                  <th className="p-4">Last Updated</th>
+                  <th className="p-4">Date</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -337,6 +380,22 @@ const Leads = () => {
                     </td>
                     <td className="p-4 text-sm text-gray-600">
                       {lead.city || "—"}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-xs font-medium w-fit">
+                          <Zap size={10} />{" "}
+                          {TYPE_LABELS[lead.type] || lead.type || "—"}
+                        </span>
+                        {lead.kw && (
+                          <span className="text-xs text-gray-400">
+                            {lead.kw} kW
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <PaymentBadge type={lead.paymentType} />
                     </td>
                     <td className="p-4 text-sm text-gray-600">
                       {lead?.employeeId?.name || "NA"}
@@ -413,7 +472,7 @@ const Leads = () => {
         onConfirm={confirmState.onConfirm}
       />
 
-      {/* Modal */}
+      {/* ── Modal ── */}
       {fullLeadView && selectedLead && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-2">
           <div
@@ -421,9 +480,14 @@ const Leads = () => {
             onClick={() => setFullLeadView(false)}
           />
           <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white shadow-2xl mx-3">
-            <div className="h-1.5 rounded-t-2xl bg-amber-400" />
+            {/* Top bar — purple for loan, emerald for cash */}
+            <div
+              className={`h-1.5 rounded-t-2xl ${selectedLead.paymentType === "loan" ? "bg-purple-400" : "bg-amber-400"}`}
+            />
+
             <div className="p-6">
-              <div className="flex items-center justify-between mb-5">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">
                     Lead Details
@@ -441,7 +505,37 @@ const Leads = () => {
                 </button>
               </div>
 
-              {/* Quick Actions — admin only */}
+              {/* Payment type banner */}
+              <div
+                className={`flex items-center gap-3 rounded-xl px-4 py-3 mb-4 border
+                ${
+                  selectedLead.paymentType === "loan"
+                    ? "bg-purple-50 border-purple-200"
+                    : "bg-emerald-50 border-emerald-200"
+                }`}
+              >
+                {selectedLead.paymentType === "loan" ? (
+                  <CreditCard size={18} className="text-purple-600 shrink-0" />
+                ) : (
+                  <Banknote size={18} className="text-emerald-600 shrink-0" />
+                )}
+                <div>
+                  <p
+                    className={`text-sm font-semibold ${selectedLead.paymentType === "loan" ? "text-purple-700" : "text-emerald-700"}`}
+                  >
+                    {selectedLead.paymentType === "loan"
+                      ? "Loan Financed"
+                      : "Cash Payment"}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {selectedLead.paymentType === "loan"
+                      ? "This project will include a loan approval step in the workflow"
+                      : "Direct cash payment — no loan step in workflow"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
               {isAdmin && (
                 <div className="flex gap-2 mb-5">
                   <button
@@ -466,57 +560,68 @@ const Leads = () => {
               )}
 
               {/* Client Info */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <div className="bg-gray-50 rounded-xl p-4 mb-3">
                 <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
                   Client Info
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs text-gray-400">Name</p>
-                    <p className="font-semibold text-gray-800">
-                      {selectedLead.clientName}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400">Contact</p>
-                    <p className="font-mono text-sm text-gray-700">
-                      {selectedLead.clientContact}
-                    </p>
-                  </div>
-                  {selectedLead.full_address && (
-                    <div className="sm:col-span-2">
-                      <p className="text-xs text-gray-400">Address</p>
-                      <p className="text-sm text-gray-700">
-                        {selectedLead.full_address}
+                  <div className="flex items-start gap-2">
+                    <User size={14} className="text-gray-400 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-gray-400">Name</p>
+                      <p className="font-semibold text-gray-800">
+                        {selectedLead.clientName}
                       </p>
                     </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <Phone
+                      size={14}
+                      className="text-gray-400 mt-0.5 shrink-0"
+                    />
+                    <div>
+                      <p className="text-xs text-gray-400">Contact</p>
+                      <p className="font-mono text-sm text-gray-700">
+                        {selectedLead.clientContact}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedLead.full_address && (
+                    <div className="sm:col-span-2 flex items-start gap-2">
+                      <MapPin
+                        size={14}
+                        className="text-gray-400 mt-0.5 shrink-0"
+                      />
+                      <div>
+                        <p className="text-xs text-gray-400">Address</p>
+                        <p className="text-sm text-gray-700">
+                          {selectedLead.full_address}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {[selectedLead.city, selectedLead.pincode]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      </div>
+                    </div>
                   )}
-                  <div>
-                    <p className="text-xs text-gray-400">City</p>
-                    <p className="text-sm text-gray-700">
-                      {selectedLead.city || "—"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400">Pincode</p>
-                    <p className="text-sm text-gray-700">
-                      {selectedLead.pincode || "—"}
-                    </p>
-                  </div>
                 </div>
               </div>
 
               {/* Project Info */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <div className="bg-gray-50 rounded-xl p-4 mb-3">
                 <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
                   Project Info
                 </p>
-                <div className="flex gap-6">
-                  <div>
-                    <p className="text-xs text-gray-400">Type</p>
-                    <span className="inline-block mt-1 rounded-lg bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-700">
-                      {selectedLead.type}
-                    </span>
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-start gap-2">
+                    <Zap size={14} className="text-gray-400 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-gray-400">Type</p>
+                      <span className="inline-block mt-1 rounded-lg bg-blue-100 px-2.5 py-1 text-sm font-medium text-blue-700">
+                        {TYPE_LABELS[selectedLead.type] || selectedLead.type}
+                      </span>
+                    </div>
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Capacity</p>
@@ -524,22 +629,33 @@ const Leads = () => {
                       {selectedLead.kw} kW
                     </p>
                   </div>
+                  <div>
+                    <p className="text-xs text-gray-400">Payment</p>
+                    <div className="mt-1">
+                      <PaymentBadge type={selectedLead.paymentType} />
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Footer */}
               <div className="flex justify-between items-start text-sm">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Submitted By</p>
-                  <p className="font-medium text-gray-800">
-                    {selectedLead.employeeId?.name || "NA"}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {selectedLead.employeeId?.email || ""}
-                  </p>
+                <div className="flex items-start gap-2">
+                  <Mail size={14} className="text-gray-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-400 mb-1">Submitted By</p>
+                    <p className="font-medium text-gray-800">
+                      {selectedLead.employeeId?.name || "NA"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {selectedLead.employeeId?.email || ""}
+                    </p>
+                  </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-gray-400 mb-1">Timestamps</p>
+                  <p className="text-xs text-gray-400 mb-1 flex items-center justify-end gap-1">
+                    <Clock size={11} /> Timestamps
+                  </p>
                   <p className="text-xs text-gray-600">
                     Created:{" "}
                     {new Date(selectedLead.createdAt).toLocaleString("en-US", {

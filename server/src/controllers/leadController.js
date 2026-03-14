@@ -47,8 +47,16 @@ export const getMyLeads = async (req, res) => {
 // POST a lead (Employees will post leads)
 export const createLead = async (req, res) => {
   try {
-    const { clientName, clientContact, full_address, city, pincode, type, kw } =
-      req.body;
+    const {
+      clientName,
+      clientContact,
+      full_address,
+      city,
+      pincode,
+      type,
+      kw,
+      paymentType,
+    } = req.body;
     const lead = new Lead({
       employeeId: req.user._id,
       clientName,
@@ -58,6 +66,7 @@ export const createLead = async (req, res) => {
       pincode,
       type,
       kw,
+      paymentType,
       status: "pending",
     });
 
@@ -90,9 +99,11 @@ export const confirmLead = async (req, res) => {
       pincode: lead.pincode,
       type: lead.type,
       kw: lead.kw,
+      paymentType: lead.paymentType,
       status: initialStatus,
     });
     await project.save();
+
     res.status(201).json({ message: "Lead approved and project confirmed." });
   } catch (error) {
     console.log("Error in leadController (confirmLead)", error);

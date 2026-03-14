@@ -62,19 +62,23 @@ export const updateProjectStatus = async (req, res) => {
   try {
     const { status } = req.body;
     const projectId = req.params.id;
-    // check if status is provided or not
+
     if (!status) {
       return res.status(400).json({ message: "Status is required" });
     }
 
-    // check project exists or not
     const project = await Project.findById(projectId);
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
-    // validations
-    const flow = PROJECT_WORKFLOW[project.type];
-    if (!flow.length) {
+
+    // Resolve flow based on type + paymentType (supports both flat and nested)
+    const workflowEntry = PROJECT_WORKFLOW[project.type];
+    const flow = Array.isArray(workflowEntry)
+      ? workflowEntry
+      : workflowEntry?.[project.paymentType ?? "cash"];
+
+    if (!flow || !flow.length) {
       return res
         .status(400)
         .json({ message: `Invalid project type: ${project.type}` });
@@ -83,29 +87,23 @@ export const updateProjectStatus = async (req, res) => {
     const currentIndex = flow.indexOf(project.status);
     const nextIndex = flow.indexOf(status);
 
-    // Invalid index
     if (nextIndex === -1) {
       return res.status(400).json({
         message: `Invalid status "${status}" for project type "${project.type}"`,
       });
     }
-    // Prevent skipping
+
     if (nextIndex !== currentIndex + 1) {
       return res.status(400).json({
         message: `Invalid status transition from "${project.status}" to "${status}"`,
       });
     }
 
-    //Update if everything is fine till here
     project.status = status;
-    project.statusHistory.push({
-      status,
-      changedBy: req.user._id,
-    });
+    project.statusHistory.push({ status, changedBy: req.user._id });
     project.updatedAt = new Date();
     await project.save();
 
-    // refetch populated project
     const populatedProject = await Project.findById(project._id).populate(
       "statusHistory.changedBy",
       "name",

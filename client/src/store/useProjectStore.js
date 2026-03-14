@@ -45,7 +45,7 @@ const useProjectStore = create((set) => ({
       if (res.status === 200) {
         set((state) => ({
           allProjects: state.allProjects.filter(
-            (project) => project._id !== id
+            (project) => project._id !== id,
           ),
           totalProjects: state.totalProjects - 1,
         }));
@@ -77,6 +77,7 @@ const useProjectStore = create((set) => ({
   //update project status
   updateProjectStatus: async (id, status) => {
     try {
+      set({ isUpdatingStatus: true });
       console.log(status, id);
       const res = await axiosInstance.put(`/project/${id}/status`, { status });
       if (res.status === 200) {
@@ -84,7 +85,7 @@ const useProjectStore = create((set) => ({
 
         set((state) => ({
           allProjects: state.allProjects.map((project) =>
-            project._id === id ? updatedProject : project
+            project._id === id ? updatedProject : project,
           ),
         }));
         toast.success(res.data.message);
@@ -92,6 +93,8 @@ const useProjectStore = create((set) => ({
     } catch (error) {
       console.log("Error in updating project status", error);
       toast.error(error?.response?.data?.message);
+    } finally {
+      set({ isUpdatingStatus: false });
     }
   },
 }));

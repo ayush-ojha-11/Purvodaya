@@ -14,6 +14,11 @@ const leadSchema = new mongoose.Schema({
     enum: ["pending", "confirmed", "rejected"],
     default: "pending",
   },
+  paymentType: {
+    type: String,
+    enum: ["loan", "cash"],
+    default: "cash",
+  },
   rejectionReason: String,
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

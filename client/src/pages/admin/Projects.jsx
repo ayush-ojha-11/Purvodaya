@@ -13,6 +13,8 @@ import {
   ChevronRight as Arrow,
   Flame,
   AlertCircle,
+  CreditCard,
+  Banknote,
 } from "lucide-react";
 import { formatDate } from "../../lib/helper";
 import ConfirmDialog from "../../components/ConfirmDialog";
@@ -20,13 +22,20 @@ import { PROJECT_WORKFLOW } from "../../config/projectStatus";
 import useAuthStore from "../../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
-/* ─── Readable label helper ───────────────────────────────────────────── */
+/* ─── Helpers ─────────────────────────────────────────────────────────── */
 const toLabel = (str) =>
   str ? str.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "—";
 
-/* ─── Status helpers ──────────────────────────────────────────────────── */
-const COMPLETED_STATUSES = ["wifi-configured", "completed"];
+/** Resolve workflow for a project, accounting for [type][paymentType] or flat [type] */
+const getFlow = (project) => {
+  const entry = PROJECT_WORKFLOW[project.type];
+  if (!entry) return [];
+  // New nested structure: { cash: [...], loan: [...] }
+  if (Array.isArray(entry)) return entry;
+  return entry[project.paymentType ?? "cash"] ?? entry["cash"] ?? [];
+};
 
+const COMPLETED_STATUSES = ["wifi-configured", "completed"];
 const isCompleted = (status) =>
   COMPLETED_STATUSES.includes(status?.toLowerCase());
 
@@ -36,12 +45,27 @@ const getStatusBadge = (status) => {
   if (COMPLETED_STATUSES.includes(s))
     return "bg-emerald-50 text-emerald-700 border-emerald-200";
   if (s === "rejected") return "bg-red-50 text-red-600 border-red-200";
+  if (s === "loan") return "bg-purple-50 text-purple-700 border-purple-200";
   return "bg-sky-50 text-sky-700 border-sky-200";
 };
 
-/* ─── Progress helpers ────────────────────────────────────────────────── */
+const PaymentBadge = ({ type }) => {
+  if (!type) return null;
+  const isLoan = type === "loan";
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border
+      ${isLoan ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-emerald-50 text-emerald-700 border-emerald-200"}`}
+    >
+      {isLoan ? <CreditCard size={9} /> : <Banknote size={9} />}
+      {isLoan ? "Loan" : "Cash"}
+    </span>
+  );
+};
+
+/* ─── Progress ────────────────────────────────────────────────────────── */
 const getProgress = (project) => {
-  const flow = PROJECT_WORKFLOW[project.type] ?? [];
+  const flow = getFlow(project);
   if (flow.length === 0) return null;
 
   const currentIndex = flow.indexOf(project.status);
@@ -117,7 +141,7 @@ const ProgressBar = ({ project, compact = false }) => {
 
   if (compact) {
     return (
-      <div className="flex items-center gap-2 min-w-30">
+      <div className="flex items-center gap-2 min-w-32">
         <div
           className="flex-1 rounded-full h-1.5 overflow-hidden"
           style={{ background: bgTrack }}
@@ -139,7 +163,7 @@ const ProgressBar = ({ project, compact = false }) => {
           <Flame
             size={12}
             className="text-orange-500 shrink-0"
-            title={`Stalled for ${prog.stallDays} days`}
+            title={`Stalled ${prog.stallDays}d`}
           />
         )}
       </div>
@@ -185,7 +209,6 @@ const ProgressBar = ({ project, compact = false }) => {
 /* ─── Status Pipeline ─────────────────────────────────────────────────── */
 const StatusPipeline = ({ flow, currentStatus }) => {
   const currentIndex = flow.indexOf(currentStatus);
-
   return (
     <div className="mt-2 overflow-x-auto pb-2">
       <div className="flex items-start" style={{ minWidth: "max-content" }}>
@@ -193,38 +216,38 @@ const StatusPipeline = ({ flow, currentStatus }) => {
           const isPast = i < currentIndex;
           const isCurrent = i === currentIndex;
           const isFuture = i > currentIndex;
-
+          const isLoanStep = step === "loan";
           return (
             <div key={step} className="flex items-center">
-              {/* Node + label */}
               <div className="flex flex-col items-center w-20">
                 <div
-                  className={`
-                    w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all
-                    ${isPast ? "bg-emerald-500 border-emerald-500 text-white" : ""}
-                    ${isCurrent ? "bg-blue-600 border-blue-600 text-white ring-4 ring-blue-100 scale-110" : ""}
-                    ${isFuture ? "bg-white border-gray-300 text-gray-400" : ""}
-                  `}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all
+                  ${isPast ? "bg-emerald-500 border-emerald-500 text-white" : ""}
+                  ${isCurrent ? `border-2 text-white ring-4 scale-110 ${isLoanStep ? "bg-purple-600 border-purple-600 ring-purple-100" : "bg-blue-600 border-blue-600 ring-blue-100"}` : ""}
+                  ${isFuture ? `bg-white border-gray-300 ${isLoanStep ? "text-purple-400 border-purple-200" : "text-gray-400"}` : ""}
+                `}
                 >
-                  {isPast ? <CheckCircle2 size={14} /> : <span>{i + 1}</span>}
+                  {isPast ? (
+                    <CheckCircle2 size={14} />
+                  ) : isLoanStep ? (
+                    <CreditCard size={12} />
+                  ) : (
+                    <span>{i + 1}</span>
+                  )}
                 </div>
                 <p
                   className={`mt-1.5 text-center w-full leading-tight text-[10px] font-medium px-1
-                    ${isCurrent ? "text-blue-700 font-semibold" : ""}
-                    ${isPast ? "text-emerald-600" : ""}
-                    ${isFuture ? "text-gray-400" : ""}
-                  `}
+                  ${isCurrent ? (isLoanStep ? "text-purple-700 font-semibold" : "text-blue-700 font-semibold") : ""}
+                  ${isPast ? "text-emerald-600" : ""}
+                  ${isFuture ? (isLoanStep ? "text-purple-400" : "text-gray-400") : ""}
+                `}
                 >
                   {toLabel(step)}
                 </p>
               </div>
-
-              {/* Connector */}
               {i < flow.length - 1 && (
                 <div
-                  className={`h-0.5 w-6 mb-6 rounded shrink-0 ${
-                    i < currentIndex ? "bg-emerald-400" : "bg-gray-200"
-                  }`}
+                  className={`h-0.5 w-6 mb-6 rounded shrink-0 ${i < currentIndex ? "bg-emerald-400" : "bg-gray-200"}`}
                 />
               )}
             </div>
@@ -235,28 +258,73 @@ const StatusPipeline = ({ flow, currentStatus }) => {
   );
 };
 
-/* ─── Mobile card ─────────────────────────────────────────────────────── */
+/* ─── Pagination ──────────────────────────────────────────────────────── */
+const Pagination = ({ page, totalPages, onPageChange }) => {
+  if (totalPages <= 1) return null;
+  const getPages = () => {
+    const pages = [];
+    const left = Math.max(1, page - 2);
+    const right = Math.min(totalPages, page + 2);
+    if (left > 1) {
+      pages.push(1);
+      if (left > 2) pages.push("...");
+    }
+    for (let i = left; i <= right; i++) pages.push(i);
+    if (right < totalPages) {
+      if (right < totalPages - 1) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+  return (
+    <div className="flex items-center gap-1">
+      <button
+        className="btn"
+        disabled={page === 1}
+        onClick={() => onPageChange(page - 1)}
+      >
+        <ChevronLeft size={16} />
+      </button>
+      {getPages().map((p, i) =>
+        p === "..." ? (
+          <span key={`e-${i}`} className="px-2 text-gray-400 text-sm">
+            …
+          </span>
+        ) : (
+          <button
+            key={p}
+            onClick={() => onPageChange(p)}
+            className={`w-8 h-8 rounded-lg text-sm font-medium transition
+              ${p === page ? "bg-blue-600 text-white shadow-sm" : "hover:bg-gray-100 text-gray-600"}`}
+          >
+            {p}
+          </button>
+        ),
+      )}
+      <button
+        className="btn"
+        disabled={page === totalPages}
+        onClick={() => onPageChange(page + 1)}
+      >
+        <ChevronRight size={16} />
+      </button>
+    </div>
+  );
+};
+
+/* ─── Mobile Card ─────────────────────────────────────────────────────── */
 const ProjectMobile = ({ project, onDelete, onViewFull, isAdmin }) => {
   const done = isCompleted(project.status);
   const prog = getProgress(project);
-
   return (
     <div
-      className={`
-        relative bg-white rounded-xl p-4 shadow-sm border cursor-pointer
-        transition hover:shadow-md active:scale-[0.99]
-        ${done ? "border-emerald-200" : prog?.isStalled ? "border-orange-200" : "border-gray-200"}
-      `}
+      className={`relative bg-white rounded-xl p-4 shadow-sm border cursor-pointer transition hover:shadow-md active:scale-[0.99]
+        ${done ? "border-emerald-200" : prog?.isStalled ? "border-orange-200" : "border-gray-200"}`}
       onClick={onViewFull}
     >
       <div
-        className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${
-          done
-            ? "bg-emerald-400"
-            : prog?.isStalled
-              ? "bg-orange-400"
-              : "bg-blue-400"
-        }`}
+        className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl
+        ${done ? "bg-emerald-400" : prog?.isStalled ? "bg-orange-400" : "bg-blue-400"}`}
       />
 
       <div className="flex justify-between items-start mb-1 pl-1">
@@ -266,7 +334,7 @@ const ProjectMobile = ({ project, onDelete, onViewFull, isAdmin }) => {
             <AlertCircle
               size={14}
               className="text-orange-500"
-              title="Project stalled"
+              title="Stalled"
             />
           )}
           <span
@@ -284,7 +352,22 @@ const ProjectMobile = ({ project, onDelete, onViewFull, isAdmin }) => {
         <p className="text-xs text-gray-400 pl-1 mt-0.5">📍 {project.city}</p>
       )}
 
-      <div className="pl-1 my-3">
+      {/* Payment + type tags */}
+      <div className="flex flex-wrap gap-1.5 pl-1 mt-2 mb-3">
+        {project.type && (
+          <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[11px] font-medium">
+            {project.type}
+          </span>
+        )}
+        {project.kw && (
+          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-[11px] font-medium">
+            {project.kw} kW
+          </span>
+        )}
+        <PaymentBadge type={project.paymentType} />
+      </div>
+
+      <div className="pl-1 mb-3">
         <ProgressBar project={project} />
       </div>
 
@@ -311,10 +394,11 @@ const ProjectMobile = ({ project, onDelete, onViewFull, isAdmin }) => {
   );
 };
 
-/* ─── Main Component ──────────────────────────────────────────────────── */
+/* ─── Main ────────────────────────────────────────────────────────────── */
 const Projects = () => {
   const {
     isLoading,
+    isUpdatingStatus,
     totalProjects,
     allProjects,
     fetchAllProjects,
@@ -347,6 +431,9 @@ const Projects = () => {
       document.body.style.overflow = "";
     };
   }, [fullProjectView]);
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   const completedProjects = allProjects.filter((p) => isCompleted(p.status));
   const activeProjects = allProjects.filter((p) => !isCompleted(p.status));
@@ -515,22 +602,11 @@ const Projects = () => {
                 <p className="text-sm text-gray-500">
                   Page {page} of {totalPages}
                 </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => fetchAllProjects(true, page - 1)}
-                    className="btn"
-                    disabled={page === 1}
-                  >
-                    <ChevronLeft size={16} /> Prev
-                  </button>
-                  <button
-                    onClick={() => fetchAllProjects(true, page + 1)}
-                    className="btn"
-                    disabled={page === totalPages}
-                  >
-                    Next <ChevronRight size={16} />
-                  </button>
-                </div>
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={(p) => fetchAllProjects(true, p)}
+                />
               </div>
             )}
           </div>
@@ -543,9 +619,10 @@ const Projects = () => {
                   <th className="p-4">Client</th>
                   <th className="p-4">City</th>
                   <th className="p-4">Type / kW</th>
+                  <th className="p-4">Payment</th>
                   <th className="p-4">Status</th>
                   <th className="p-4 min-w-40">Progress</th>
-                  <th className="p-4">Last Updated</th>
+                  <th className="p-4">Updated</th>
                   <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -556,13 +633,8 @@ const Projects = () => {
                   return (
                     <tr
                       key={project._id}
-                      className={`hover:bg-gray-50 transition ${
-                        done
-                          ? "bg-emerald-50/30"
-                          : prog?.isStalled
-                            ? "bg-orange-50/20"
-                            : ""
-                      }`}
+                      className={`hover:bg-gray-50 transition
+                      ${done ? "bg-emerald-50/30" : prog?.isStalled ? "bg-orange-50/20" : ""}`}
                     >
                       <td className="p-4">
                         <div className="flex items-center gap-2">
@@ -570,7 +642,7 @@ const Projects = () => {
                             <Flame
                               size={13}
                               className="text-orange-500 shrink-0"
-                              title={`Stalled for ${prog.stallDays} days`}
+                              title={`Stalled ${prog.stallDays}d`}
                             />
                           )}
                           <div>
@@ -593,6 +665,9 @@ const Projects = () => {
                             · {project.kw} kW
                           </span>
                         )}
+                      </td>
+                      <td className="p-4">
+                        <PaymentBadge type={project.paymentType} />
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-1.5">
@@ -654,22 +729,11 @@ const Projects = () => {
               <span className="text-sm text-gray-500">
                 Page {page} of {totalPages}
               </span>
-              <div className="flex gap-2">
-                <button
-                  className="btn"
-                  disabled={page === 1}
-                  onClick={() => fetchAllProjects(true, page - 1)}
-                >
-                  <ChevronLeft size={16} /> Prev
-                </button>
-                <button
-                  className="btn"
-                  disabled={page === totalPages}
-                  onClick={() => fetchAllProjects(true, page + 1)}
-                >
-                  Next <ChevronRight size={16} />
-                </button>
-              </div>
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={(p) => fetchAllProjects(true, p)}
+              />
             </div>
           </div>
         </>
@@ -684,14 +748,15 @@ const Projects = () => {
         onConfirm={confirmState.onConfirm}
       />
 
-      {/* Modal */}
+      {/* ── Modal ── */}
       {fullProjectView &&
         selectedProject &&
         (() => {
-          const flow = PROJECT_WORKFLOW[selectedProject.type] ?? [];
+          const flow = getFlow(selectedProject);
           const currentIndex = flow.indexOf(selectedProject.status);
           const nextStatus = flow[currentIndex + 1];
           const done = !nextStatus && currentIndex !== -1;
+          const isLoan = selectedProject.paymentType === "loan";
 
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -699,10 +764,9 @@ const Projects = () => {
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                 onClick={() => setFullProjectView(false)}
               />
-
               <div className="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white shadow-2xl mx-3">
                 <div
-                  className={`h-1.5 rounded-t-2xl ${done ? "bg-emerald-400" : "bg-blue-500"}`}
+                  className={`h-1.5 rounded-t-2xl ${done ? "bg-emerald-400" : isLoan ? "bg-purple-400" : "bg-blue-500"}`}
                 />
 
                 <div className="p-6">
@@ -727,7 +791,7 @@ const Projects = () => {
                     </button>
                   </div>
 
-                  {/* Client Info */}
+                  {/* Client + Payment info */}
                   <div className="bg-gray-50 rounded-xl p-4 mb-4 flex justify-between">
                     <div>
                       <p className="font-semibold text-gray-900 text-base">
@@ -741,6 +805,9 @@ const Projects = () => {
                           📍 {selectedProject.city}
                         </p>
                       )}
+                      <div className="mt-2">
+                        <PaymentBadge type={selectedProject.paymentType} />
+                      </div>
                     </div>
                     <div className="text-right text-sm text-gray-600">
                       <p className="font-medium">{selectedProject.type}</p>
@@ -749,6 +816,25 @@ const Projects = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Loan notice */}
+                  {isLoan && (
+                    <div className="flex items-start gap-3 bg-purple-50 border border-purple-200 rounded-xl px-4 py-3 mb-4">
+                      <CreditCard
+                        size={16}
+                        className="text-purple-600 mt-0.5 shrink-0"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-purple-700">
+                          Loan Financed Project
+                        </p>
+                        <p className="text-xs text-purple-500 mt-0.5">
+                          Workflow includes a loan approval step before work
+                          begins.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Progress */}
                   <div className="bg-gray-50 rounded-xl p-4 mb-4">
@@ -796,7 +882,14 @@ const Projects = () => {
 
                   {/* Current Status + Action */}
                   <div
-                    className={`rounded-xl border p-4 mb-4 ${done ? "border-emerald-200 bg-emerald-50/50" : "border-blue-100 bg-blue-50/30"}`}
+                    className={`rounded-xl border p-4 mb-4
+                  ${
+                    done
+                      ? "border-emerald-200 bg-emerald-50/50"
+                      : nextStatus === "loan"
+                        ? "border-purple-200 bg-purple-50/30"
+                        : "border-blue-100 bg-blue-50/30"
+                  }`}
                   >
                     <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">
                       Current Status
@@ -806,10 +899,10 @@ const Projects = () => {
                     >
                       {toLabel(selectedProject.status) || "Pending"}
                     </span>
-
                     <div className="mt-4">
                       {nextStatus ? (
                         <button
+                          disabled={isUpdatingStatus}
                           onClick={() => {
                             if (navigator?.vibrate) navigator.vibrate(20);
                             setConfirmState({
@@ -818,19 +911,29 @@ const Projects = () => {
                               green: true,
                               message: `Change status to "${toLabel(nextStatus)}"?`,
                               onConfirm: async () => {
+                                setConfirmState({ open: false });
+                                setFullProjectView(false);
                                 await updateProjectStatus(
                                   selectedProject._id,
                                   nextStatus,
                                 );
-                                setConfirmState({ open: false });
-                                setFullProjectView(false);
                               },
                             });
                           }}
-                          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition cursor-pointer"
+                          className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed
+                          ${nextStatus === "loan" ? "bg-purple-600 hover:bg-purple-700" : "bg-blue-600 hover:bg-blue-700"}`}
                         >
-                          Advance to "{toLabel(nextStatus)}"
-                          <Arrow size={14} />
+                          {isUpdatingStatus ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              Updating...
+                            </>
+                          ) : (
+                            <>
+                              Advance to "{toLabel(nextStatus)}"{" "}
+                              <Arrow size={14} />
+                            </>
+                          )}
                         </button>
                       ) : (
                         <div className="space-y-2">
@@ -861,29 +964,43 @@ const Projects = () => {
                             .reverse()
                             .map((h, i) => {
                               const isFirst = i === 0;
+                              const isLoanEntry = h.status === "loan";
                               return (
                                 <li key={i} className="relative">
                                   <div
-                                    className={`absolute -left-5.5 top-1 w-3 h-3 rounded-full border-2 ${
-                                      isFirst
-                                        ? "bg-blue-500 border-blue-500"
-                                        : "bg-white border-gray-300"
-                                    }`}
+                                    className={`absolute -left-5.5 top-1 w-3 h-3 rounded-full border-2
+                                ${
+                                  isFirst
+                                    ? isLoanEntry
+                                      ? "bg-purple-500 border-purple-500"
+                                      : "bg-blue-500 border-blue-500"
+                                    : "bg-white border-gray-300"
+                                }`}
                                   />
                                   <div
-                                    className={`rounded-lg border px-4 py-3 text-sm ${
-                                      isFirst
-                                        ? "border-blue-200 bg-blue-50"
-                                        : "border-gray-100 bg-white"
-                                    }`}
+                                    className={`rounded-lg border px-4 py-3 text-sm
+                                ${
+                                  isFirst
+                                    ? isLoanEntry
+                                      ? "border-purple-200 bg-purple-50"
+                                      : "border-blue-200 bg-blue-50"
+                                    : "border-gray-100 bg-white"
+                                }`}
                                   >
                                     <div className="flex justify-between gap-4">
                                       <span
-                                        className={`font-semibold capitalize ${isFirst ? "text-blue-700" : "text-gray-700"}`}
+                                        className={`font-semibold capitalize flex items-center gap-1.5
+                                    ${isFirst ? (isLoanEntry ? "text-purple-700" : "text-blue-700") : "text-gray-700"}`}
                                       >
+                                        {isLoanEntry && (
+                                          <CreditCard size={12} />
+                                        )}
                                         {toLabel(h.status)}
                                         {isFirst && (
-                                          <span className="ml-2 text-[10px] font-medium bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">
+                                          <span
+                                            className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full
+                                        ${isLoanEntry ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"}`}
+                                          >
                                             Latest
                                           </span>
                                         )}

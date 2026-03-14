@@ -10,6 +10,11 @@ const projectSchema = new mongoose.Schema({
   type: String,
   kw: String,
   status: { type: String, required: true },
+  paymentType: {
+    type: String,
+    enum: ["cash", "loan"],
+    required: true,
+  },
   statusHistory: [
     {
       status: { type: String, required: true },
