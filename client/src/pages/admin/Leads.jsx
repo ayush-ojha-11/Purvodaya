@@ -286,7 +286,7 @@ const Leads = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto min-h-screen pb-16 p-4">
+    <div className="max-w-7xl mx-auto min-h-screen pb-16 p-4">
       {/* Header */}
       <div className="flex flex-row justify-between items-start mb-6 gap-4 p-2">
         <div>

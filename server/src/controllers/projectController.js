@@ -72,11 +72,15 @@ export const updateProjectStatus = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
+    if (!project.paymentType) {
+      project.paymentType = "cash";
+    }
+
     // Resolve flow based on type + paymentType (supports both flat and nested)
     const workflowEntry = PROJECT_WORKFLOW[project.type];
     const flow = Array.isArray(workflowEntry)
       ? workflowEntry
-      : workflowEntry?.[project.paymentType ?? "cash"];
+      : workflowEntry?.[project?.paymentType ?? "cash"];
 
     if (!flow || !flow.length) {
       return res
