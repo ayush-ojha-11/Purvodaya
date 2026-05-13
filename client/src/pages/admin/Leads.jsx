@@ -258,6 +258,9 @@ const Leads = () => {
       message: "Delete this lead? This cannot be undone.",
       onConfirm: async () => {
         await deleteLead(id);
+        const isLastItemOnPage = pendingLeads.length === 1 && page > 1;
+        const pageToFetch = isLastItemOnPage ? page - 1 : page;
+        await fetchAllLeads(true, pageToFetch);
         setConfirmState({ open: false });
       },
     });

@@ -55,7 +55,7 @@ const useLeadStore = create((set) => ({
 
     try {
       set({ isLoading: true });
-      const res = await axiosInstance.get(`/lead?page=${page}&limit=10`);
+      const res = await axiosInstance.get(`/lead?page=${page}&limit=20`);
       set({
         allLeads: res.data.leads,
         totalPages: res.data.totalPages,
@@ -100,13 +100,10 @@ const useLeadStore = create((set) => ({
     try {
       const res = await axiosInstance.delete(`/lead/delete/${id}`);
       if (res.status === 200) {
-        // refresh without reload
-        set((state) => ({
-          allLeads: state.allLeads.filter((lead) => lead._id !== id),
-          totalPendingLeads: state.totalPendingLeads - 1,
-        }));
-
         toast.success(res.data.message);
+
+        const { page, fetchAllLeads } = useLeadStore.getState();
+        await fetchAllLeads(true, page);
       }
     } catch (error) {
       console.log("Error in deleting lead (useLeadStore)");
@@ -119,10 +116,10 @@ const useLeadStore = create((set) => ({
     try {
       const res = await axiosInstance.delete("/lead/deleteAll");
       if (res.status === 200) {
-        set(() => ({
-          allLeads: [],
-          totalPendingLeads: 0,
-        }));
+        // Reset to page 1 and clear the list via a fresh fetch
+        const { fetchAllLeads } = useLeadStore.getState();
+        await fetchAllLeads(true, 1);
+        toast.success("All leads deleted");
       }
     } catch (error) {
       console.log("Error in deleting lead (useLeadStore)");

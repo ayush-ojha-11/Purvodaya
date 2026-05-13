@@ -479,6 +479,24 @@ const Projects = () => {
     downloadProjectPDF(project);
   };
 
+  const handleStatusUpdate = async (projectId, nextStatus) => {
+    try {
+      // Update the backend/store
+      await updateProjectStatus(projectId, nextStatus);
+
+      // Update the local state so the UI reacts immediately
+      // If your store returns the updated project object, use it.
+      // Otherwise, find the project in the updated store or manually merge:
+      setSelectedProject((prev) => ({
+        ...prev,
+        status: nextStatus,
+        updatedAt: new Date().toISOString(), // Keep timestamp fresh
+      }));
+    } catch (error) {
+      console.error("Failed to update status", error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -912,8 +930,8 @@ const Projects = () => {
                               message: `Change status to "${toLabel(nextStatus)}"?`,
                               onConfirm: async () => {
                                 setConfirmState({ open: false });
-                                setFullProjectView(false);
-                                await updateProjectStatus(
+                                //setFullProjectView(false);
+                                handleStatusUpdate(
                                   selectedProject._id,
                                   nextStatus,
                                 );

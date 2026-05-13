@@ -43,13 +43,17 @@ const useProjectStore = create((set) => ({
     try {
       const res = await axiosInstance.delete(`/project/delete/${id}`);
       if (res.status === 200) {
-        set((state) => ({
-          allProjects: state.allProjects.filter(
-            (project) => project._id !== id,
-          ),
-          totalProjects: state.totalProjects - 1,
-        }));
         toast.success(res.data.message);
+        // Get the current page and the fetch function from the store
+        const { page, fetchAllProjects, allProjects } =
+          useProjectStore.getState();
+
+        // Check if we just deleted the very last item on a page (that isn't page 1)
+        const isLastItemOnPage = allProjects.length === 1 && page > 1;
+        const targetPage = isLastItemOnPage ? page - 1 : page;
+
+        // Re-fetch to pull the "next" project into the current view
+        await fetchAllProjects(true, targetPage);
       }
     } catch (error) {
       console.log("Error in deleting the project (useDeleteproject)", error);
@@ -62,11 +66,10 @@ const useProjectStore = create((set) => ({
     try {
       const res = await axiosInstance.delete("/project/deleteAll");
       if (res.status === 200) {
-        set(() => ({
-          allProjects: [],
-          totalProjects: 0,
-        }));
         toast.success("All projects deleted");
+        // Reset everything by fetching page 1
+        const { fetchAllProjects } = useProjectStore.getState();
+        await fetchAllProjects(true, 1);
       }
     } catch (error) {
       console.log("Error in deleting all projects (useDeleteproject)", error);
